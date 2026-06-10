@@ -1,0 +1,26 @@
+<mat-sidenav-container class="app-shell">
+  <mat-sidenav
+    #drawer
+    class="app-sidenav"
+    [mode]="isHandset() ? 'over' : 'side'"
+    [opened]="!isHandset()"
+    [fixedInViewport]="isHandset()"
+  >
+    <app-sidebar (navigate)="isHandset() && drawer.close()" />
+  </mat-sidenav>
+
+  <mat-sidenav-content class="app-content">
+    @if (isHandset()) {
+      <mat-toolbar class="mobile-toolbar">
+        <button mat-icon-button (click)="drawer.toggle()" aria-label="Toggle navigation menu">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span class="mobile-title">Zig's Personal Assistant</span>
+      </mat-toolbar>
+    }
+
+    <main class="page-content">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

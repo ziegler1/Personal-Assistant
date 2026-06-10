@@ -1,0 +1,45 @@
+:host {
+  display: block;
+  height: 100dvh;
+}
+
+.app-shell {
+  height: 100%;
+}
+
+.app-sidenav {
+  width: 240px;
+  background: var(--app-surface);
+  border-right: 1px solid var(--app-border);
+}
+
+.app-content {
+  background: var(--app-bg);
+}
+
+.mobile-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+  color: var(--app-text);
+
+  .mobile-title {
+    margin-left: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+}
+
+.page-content {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .page-content {
+    padding: 16px;
+  }
+}

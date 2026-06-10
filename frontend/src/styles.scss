@@ -1,0 +1,105 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin defines CSS variables used to style Angular Material
+// components according to the Material 3 design spec.
+// https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  color-scheme: dark;
+
+  @include mat.theme(
+    (
+      color: (
+        theme-type: dark,
+        primary: mat.$cyan-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+
+  // ---------------------------------------------------------------------
+  // Brand overrides - dark navy + teal/cyan accent, matching
+  // Waypoint / Zig's Codex. These override Angular Material's M3 system
+  // variables so Material components pick up the brand palette too.
+  // https://material.angular.dev/guide/system-variables
+  // ---------------------------------------------------------------------
+  --mat-sys-primary: #06b6d4;
+  --mat-sys-on-primary: #04222a;
+  --mat-sys-primary-container: #0e7490;
+  --mat-sys-on-primary-container: #cffafe;
+
+  --mat-sys-background: #0f172a;
+  --mat-sys-on-background: #e2e8f0;
+
+  --mat-sys-surface: #0f172a;
+  --mat-sys-on-surface: #e2e8f0;
+  --mat-sys-on-surface-variant: #94a3b8;
+
+  --mat-sys-surface-container-lowest: #0b1220;
+  --mat-sys-surface-container-low: #131f35;
+  --mat-sys-surface-container: #1e293b;
+  --mat-sys-surface-container-high: #243047;
+  --mat-sys-surface-container-highest: #2c3a55;
+
+  --mat-sys-outline: #334155;
+  --mat-sys-outline-variant: #1e293b;
+
+  // ---------------------------------------------------------------------
+  // App-wide design tokens for non-Material elements (sidebar, cards, etc.)
+  // ---------------------------------------------------------------------
+  --app-bg: #0f172a;
+  --app-surface: #1e293b;
+  --app-surface-elevated: #243047;
+  --app-border: #334155;
+  --app-accent: #06b6d4;
+  --app-accent-hover: #22d3ee;
+  --app-text: #e2e8f0;
+  --app-text-muted: #94a3b8;
+  --app-radius: 10px;
+}
+
+body {
+  color-scheme: dark;
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  font: var(--mat-sys-body-medium);
+  margin: 0;
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--app-accent);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--app-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--app-surface-elevated);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--app-border);
+}
+
+// Shared "card" look used across feature views.
+.app-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  padding: 16px;
+}

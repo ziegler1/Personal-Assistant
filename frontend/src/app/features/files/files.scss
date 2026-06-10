@@ -1,0 +1,96 @@
+.files-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 20px;
+  border: 2px dashed var(--app-border);
+  border-radius: var(--app-radius);
+  text-align: center;
+  color: var(--app-text-muted);
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  p {
+    margin: 0;
+  }
+
+  mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    color: var(--app-accent);
+  }
+}
+
+.dropzone-active {
+  border-color: var(--app-accent);
+  background: rgba(6, 182, 212, 0.08);
+}
+
+.status-text {
+  color: var(--app-text-muted);
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-icon {
+  color: var(--app-accent);
+  flex-shrink: 0;
+}
+
+.file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.file-meta {
+  color: var(--app-text-muted);
+  font-size: 0.8rem;
+}
+
+.file-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: inherit;
+  color: var(--app-accent);
+  cursor: pointer;
+  text-decoration: underline;
+}

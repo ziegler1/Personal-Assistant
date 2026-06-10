@@ -1,0 +1,86 @@
+.editor-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-text {
+  color: var(--app-text-muted);
+}
+
+.editor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.type-field {
+  width: 200px;
+}
+
+.source-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.tags-section,
+.files-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-label {
+  font-size: 0.85rem;
+  color: var(--app-text-muted);
+}
+
+.tag-input-field {
+  max-width: 280px;
+}
+
+.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--app-text-muted);
+    font-size: 0.9rem;
+  }
+}

@@ -1,0 +1,54 @@
+<div class="files-page">
+  <h1>Files</h1>
+
+  <div
+    class="dropzone"
+    [class.dropzone-active]="isDragging()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (drop)="onDrop($event)"
+  >
+    <mat-icon>cloud_upload</mat-icon>
+    <p>Drag and drop files here, or</p>
+    <button mat-stroked-button (click)="fileInput.click()" [disabled]="uploading()">
+      Browse files
+    </button>
+    <input #fileInput type="file" multiple hidden (change)="onFileInputChange($event)" />
+    @if (uploading()) {
+      <p class="status-text">Uploading…</p>
+    }
+  </div>
+
+  @if (loading()) {
+    <p class="status-text">Loading files…</p>
+  } @else if (files().length === 0) {
+    <p class="status-text">No files uploaded yet.</p>
+  } @else {
+    <div class="file-list">
+      @for (file of files(); track file.id) {
+        <div class="app-card file-row">
+          <mat-icon class="file-icon">description</mat-icon>
+          <div class="file-info">
+            <span class="file-name">{{ file.filename }}</span>
+            <span class="file-meta">
+              {{ formatSize(file.size_bytes) }}
+              @if (file.note_title && file.note_id) {
+                · linked to
+                <button class="link-button" (click)="openNote(file.note_id)">{{ file.note_title }}</button>
+              }
+              · {{ file.created_at | date: 'MMM d, y' }}
+            </span>
+          </div>
+          <div class="file-actions">
+            <button mat-icon-button (click)="download(file)" aria-label="Download file">
+              <mat-icon>download</mat-icon>
+            </button>
+            <button mat-icon-button (click)="delete(file)" aria-label="Delete file">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

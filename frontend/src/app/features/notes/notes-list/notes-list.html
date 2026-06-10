@@ -1,0 +1,63 @@
+<div class="notes-page">
+  <div class="page-header">
+    <h1>Notes</h1>
+    <button mat-flat-button color="primary" (click)="newNote()">
+      <mat-icon>add</mat-icon>
+      New Note
+    </button>
+  </div>
+
+  <div class="filters">
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Content type</mat-label>
+      <mat-select [ngModel]="selectedType()" (ngModelChange)="selectedType.set($event); load()">
+        <mat-option value="">All types</mat-option>
+        @for (type of contentTypes; track type) {
+          <mat-option [value]="type">{{ type }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Tag</mat-label>
+      <input
+        matInput
+        [ngModel]="tagFilter()"
+        (ngModelChange)="tagFilter.set($event)"
+        (keyup.enter)="load()"
+        placeholder="Filter by tag"
+      />
+    </mat-form-field>
+
+    <button mat-stroked-button (click)="load()">Apply</button>
+  </div>
+
+  @if (loading()) {
+    <p class="status-text">Loading notes…</p>
+  } @else if (notes().length === 0) {
+    <p class="status-text">No notes found.</p>
+  } @else {
+    <div class="notes-grid">
+      @for (note of notes(); track note.id) {
+        <div class="app-card note-card" (click)="openNote(note.id)">
+          <div class="note-card-header">
+            <h3>{{ note.title }}</h3>
+            <button mat-icon-button (click)="deleteNote($event, note.id)" aria-label="Delete note">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+          <p class="note-snippet">{{ contentSnippet(note.content) }}</p>
+          <div class="note-meta">
+            <mat-chip-set>
+              <mat-chip>{{ note.content_type }}</mat-chip>
+              @for (tag of note.tags; track tag) {
+                <mat-chip>{{ tag }}</mat-chip>
+              }
+            </mat-chip-set>
+            <span class="note-date">{{ note.updated_at | date: 'MMM d, y' }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

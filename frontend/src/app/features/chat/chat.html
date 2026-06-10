@@ -1,0 +1,49 @@
+<div class="chat-page">
+  <h1>Chat</h1>
+
+  <div class="chat-thread">
+    @if (messages().length === 0) {
+      <p class="status-text">Ask a question about your notes to get started.</p>
+    }
+    @for (message of messages(); track $index) {
+      <div class="message" [class.message-user]="message.role === 'user'">
+        <div class="message-bubble">
+          <p class="message-content">{{ message.content }}</p>
+          @if (message.sources && message.sources.length > 0) {
+            <div class="message-sources">
+              <span class="sources-label">Sources:</span>
+              @for (source of message.sources; track source.id) {
+                <button class="source-chip" (click)="openSource(source.id)">{{ source.title }}</button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+    @if (loading()) {
+      <div class="message">
+        <div class="message-bubble">
+          <p class="message-content status-text">Thinking…</p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="chat-input">
+    <mat-form-field appearance="outline" class="chat-field">
+      <mat-label>Message</mat-label>
+      <input
+        matInput
+        [ngModel]="input()"
+        (ngModelChange)="input.set($event)"
+        (keyup.enter)="send()"
+        placeholder="Ask about your notes…"
+        [disabled]="loading()"
+      />
+    </mat-form-field>
+    <button mat-flat-button color="primary" (click)="send()" [disabled]="loading() || !input().trim()">
+      <mat-icon>send</mat-icon>
+      Send
+    </button>
+  </div>
+</div>

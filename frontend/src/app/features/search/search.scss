@@ -1,0 +1,76 @@
+.search-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}
+
+.search-bar {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.search-field {
+  flex: 1;
+  min-width: 240px;
+}
+
+.status-text {
+  color: var(--app-text-muted);
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.result-card {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--app-accent);
+  }
+}
+
+.result-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+}
+
+.result-score {
+  color: var(--app-accent);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.result-snippet {
+  margin: 0;
+  color: var(--app-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+
+  ::ng-deep b {
+    color: var(--app-text);
+    background: rgba(6, 182, 212, 0.25);
+    border-radius: 3px;
+    padding: 0 2px;
+  }
+}

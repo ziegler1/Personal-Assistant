@@ -1,0 +1,97 @@
+<div class="editor-page">
+  <div class="page-header">
+    <h1>{{ isNew ? 'New Note' : 'Edit Note' }}</h1>
+    <div class="header-actions">
+      @if (!isNew) {
+        <button mat-stroked-button color="warn" (click)="delete()">
+          <mat-icon>delete</mat-icon>
+          Delete
+        </button>
+      }
+      <button mat-stroked-button (click)="cancel()">Cancel</button>
+      <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || !title().trim()">
+        <mat-icon>save</mat-icon>
+        Save
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p class="status-text">Loading…</p>
+  } @else {
+    <div class="app-card editor-form">
+      <mat-form-field appearance="outline">
+        <mat-label>Title</mat-label>
+        <input matInput [ngModel]="title()" (ngModelChange)="title.set($event)" />
+      </mat-form-field>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="type-field">
+          <mat-label>Content type</mat-label>
+          <mat-select [ngModel]="contentType()" (ngModelChange)="contentType.set($event)">
+            @for (type of contentTypes; track type) {
+              <mat-option [value]="type">{{ type }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="source-field">
+          <mat-label>Source</mat-label>
+          <input
+            matInput
+            [ngModel]="source()"
+            (ngModelChange)="source.set($event)"
+            placeholder="Optional source / URL"
+          />
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Content</mat-label>
+        <textarea
+          matInput
+          rows="14"
+          [ngModel]="content()"
+          (ngModelChange)="content.set($event)"
+        ></textarea>
+      </mat-form-field>
+
+      <div class="tags-section">
+        <label class="field-label">Tags</label>
+        <mat-chip-set>
+          @for (tag of tags(); track tag) {
+            <mat-chip [removable]="true" (removed)="removeTag(tag)">
+              {{ tag }}
+              <button matChipRemove aria-label="Remove tag">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip>
+          }
+        </mat-chip-set>
+        <mat-form-field appearance="outline" class="tag-input-field">
+          <input
+            matInput
+            [ngModel]="tagInput()"
+            (ngModelChange)="tagInput.set($event)"
+            (keyup.enter)="addTag()"
+            placeholder="Add a tag and press Enter"
+          />
+        </mat-form-field>
+      </div>
+
+      @if (files().length > 0) {
+        <div class="files-section">
+          <label class="field-label">Attached files</label>
+          <ul class="file-list">
+            @for (file of files(); track file.id) {
+              <li>
+                <mat-icon>attach_file</mat-icon>
+                <span>{{ file.filename }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  }
+</div>

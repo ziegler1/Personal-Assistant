@@ -1,0 +1,44 @@
+<div class="search-page">
+  <h1>Search</h1>
+
+  <div class="search-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search your notes</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input
+        matInput
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        (keyup.enter)="search()"
+        placeholder="Search by keyword or meaning…"
+      />
+    </mat-form-field>
+    <button mat-flat-button color="primary" (click)="search()" [disabled]="!query().trim()">
+      Search
+    </button>
+  </div>
+
+  @if (loading()) {
+    <p class="status-text">Searching…</p>
+  } @else if (searched() && results().length === 0) {
+    <p class="status-text">No results found.</p>
+  } @else if (results().length > 0) {
+    <div class="results-list">
+      @for (result of results(); track result.id) {
+        <div class="app-card result-card" (click)="openNote(result.id)">
+          <div class="result-header">
+            <h3>{{ result.title }}</h3>
+            <span class="result-score">{{ result.score * 100 | number: '1.0-0' }}% match</span>
+          </div>
+          <p class="result-snippet" [innerHTML]="result.snippet"></p>
+          <mat-chip-set>
+            <mat-chip>{{ result.content_type }}</mat-chip>
+            @for (tag of result.tags; track tag) {
+              <mat-chip>{{ tag }}</mat-chip>
+            }
+          </mat-chip-set>
+        </div>
+      }
+    </div>
+  }
+</div>
