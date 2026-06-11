@@ -1,0 +1,49 @@
+<h2 mat-dialog-title>Quick add note</h2>
+<mat-dialog-content class="quick-add-content">
+  <mat-form-field appearance="outline">
+    <mat-label>Title</mat-label>
+    <input matInput [ngModel]="title()" (ngModelChange)="title.set($event)" autofocus />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Content</mat-label>
+    <textarea matInput rows="5" [ngModel]="content()" (ngModelChange)="content.set($event)"></textarea>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="type-field">
+    <mat-label>Content type</mat-label>
+    <mat-select [ngModel]="contentType()" (ngModelChange)="contentType.set($event)">
+      @for (type of contentTypes; track type) {
+        <mat-option [value]="type">{{ type }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <div class="tags-section">
+    <mat-chip-set>
+      @for (tag of tags(); track tag) {
+        <mat-chip [removable]="true" (removed)="removeTag(tag)">
+          {{ tag }}
+          <button matChipRemove aria-label="Remove tag">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+    </mat-chip-set>
+    <mat-form-field appearance="outline" class="tag-input-field">
+      <input
+        matInput
+        [ngModel]="tagInput()"
+        (ngModelChange)="tagInput.set($event)"
+        (keyup.enter)="addTag()"
+        placeholder="Add a tag and press Enter"
+      />
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button color="primary" (click)="save()" [disabled]="!title().trim() || saving()">
+    {{ saving() ? 'Saving…' : 'Save' }}
+  </button>
+</mat-dialog-actions>

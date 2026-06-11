@@ -80,6 +80,15 @@ export class Files implements OnInit {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
+  fileIcon(mimeType: string | null): string {
+    if (!mimeType) return 'insert_drive_file';
+    if (mimeType === 'application/pdf') return 'picture_as_pdf';
+    if (mimeType.startsWith('image/')) return 'image';
+    if (mimeType.startsWith('text/')) return 'article';
+    if (mimeType === 'application/json') return 'data_object';
+    return 'insert_drive_file';
+  }
+
   private uploadFiles(fileList: FileList): void {
     this.uploading.set(true);
     const uploads = Array.from(fileList).map((file) => this.filesApi.upload(file));

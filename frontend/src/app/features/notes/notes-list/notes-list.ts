@@ -1,27 +1,25 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { NotesApi } from '../../../core/services/notes';
 import { CONTENT_TYPES, ContentType, Note } from '../../../core/models/note.model';
+import { NoteRow } from '../../../shared/note-row/note-row';
 
 @Component({
   selector: 'app-notes-list',
   imports: [
     FormsModule,
-    DatePipe,
     MatButtonModule,
     MatIconModule,
-    MatChipsModule,
     MatFormFieldModule,
     MatSelectModule,
     MatInputModule,
+    NoteRow,
   ],
   templateUrl: './notes-list.html',
   styleUrl: './notes-list.scss',
@@ -64,13 +62,8 @@ export class NotesList implements OnInit {
     this.router.navigate(['/notes', id]);
   }
 
-  deleteNote(event: Event, id: string): void {
-    event.stopPropagation();
+  deleteNote(id: string): void {
     if (!confirm('Delete this note? This cannot be undone.')) return;
     this.notesApi.delete(id).subscribe(() => this.load());
-  }
-
-  contentSnippet(content: string): string {
-    return content.length > 160 ? `${content.slice(0, 160)}…` : content;
   }
 }

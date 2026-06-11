@@ -11,6 +11,12 @@
   gap: 12px;
   padding: 20px 16px;
   border-bottom: 1px solid var(--app-border);
+  color: var(--app-text);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+  }
 
   .logo-icon {
     color: var(--app-accent);
@@ -28,6 +34,19 @@
   flex: 1;
 }
 
+.nav-group-label {
+  padding: 16px 20px 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--app-text-muted);
+
+  &:first-child {
+    padding-top: 8px;
+  }
+}
+
 .nav-item {
   --mat-list-list-item-label-text-color: var(--app-text-muted);
   --mat-list-list-item-leading-icon-color: var(--app-text-muted);
@@ -40,4 +59,10 @@
   --mat-list-list-item-label-text-color: var(--app-accent);
   --mat-list-list-item-leading-icon-color: var(--app-accent);
   background: rgba(6, 182, 212, 0.12);
+}
+
+@media (max-width: 768px) {
+  .nav-group-label {
+    display: none;
+  }
 }

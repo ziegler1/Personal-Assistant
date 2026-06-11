@@ -37,26 +37,9 @@
   } @else if (notes().length === 0) {
     <p class="status-text">No notes found.</p>
   } @else {
-    <div class="notes-grid">
+    <div class="notes-list">
       @for (note of notes(); track note.id) {
-        <div class="app-card note-card" (click)="openNote(note.id)">
-          <div class="note-card-header">
-            <h3>{{ note.title }}</h3>
-            <button mat-icon-button (click)="deleteNote($event, note.id)" aria-label="Delete note">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </div>
-          <p class="note-snippet">{{ contentSnippet(note.content) }}</p>
-          <div class="note-meta">
-            <mat-chip-set>
-              <mat-chip>{{ note.content_type }}</mat-chip>
-              @for (tag of note.tags; track tag) {
-                <mat-chip>{{ tag }}</mat-chip>
-              }
-            </mat-chip-set>
-            <span class="note-date">{{ note.updated_at | date: 'MMM d, y' }}</span>
-          </div>
-        </div>
+        <app-note-row [note]="note" (open)="openNote(note.id)" (delete)="deleteNote(note.id)" />
       }
     </div>
   }

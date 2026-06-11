@@ -32,60 +32,7 @@
   color: var(--app-text-muted);
 }
 
-.notes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-}
-
-.note-card {
-  cursor: pointer;
+.notes-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  transition: border-color 0.15s ease;
-
-  &:hover {
-    border-color: var(--app-accent);
-  }
-}
-
-.note-card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-
-  h3 {
-    margin: 0;
-    font-size: 1.05rem;
-    word-break: break-word;
-  }
-}
-
-.note-snippet {
-  margin: 0;
-  color: var(--app-text-muted);
-  font-size: 0.9rem;
-  line-height: 1.4;
-  flex: 1;
-  white-space: pre-wrap;
-}
-
-.note-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-
-  mat-chip-set {
-    flex: 1;
-  }
-}
-
-.note-date {
-  color: var(--app-text-muted);
-  font-size: 0.8rem;
-  white-space: nowrap;
 }

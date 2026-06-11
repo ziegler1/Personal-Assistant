@@ -9,6 +9,11 @@ interface NavItem {
   icon: string;
 }
 
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
 @Component({
   selector: 'app-sidebar',
   imports: [RouterLink, RouterLinkActive, MatIconModule, MatListModule],
@@ -18,10 +23,24 @@ interface NavItem {
 export class Sidebar {
   readonly navigate = output<void>();
 
-  protected readonly navItems: NavItem[] = [
-    { path: '/notes', label: 'Notes', icon: 'description' },
-    { path: '/search', label: 'Search', icon: 'search' },
-    { path: '/chat', label: 'Chat', icon: 'forum' },
-    { path: '/files', label: 'Files', icon: 'folder' },
+  protected readonly navGroups: NavGroup[] = [
+    {
+      label: 'Knowledge',
+      items: [
+        { path: '/notes', label: 'Notes', icon: 'description' },
+        { path: '/files', label: 'Files', icon: 'folder' },
+      ],
+    },
+    {
+      label: 'Discover',
+      items: [
+        { path: '/search', label: 'Search', icon: 'search' },
+        { path: '/chat', label: 'Chat', icon: 'forum' },
+      ],
+    },
+    {
+      label: 'Create',
+      items: [{ path: '/notes/new', label: 'New Note', icon: 'add' }],
+    },
   ];
 }

@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,14 +24,23 @@ import { SearchResult } from '../../core/models/note.model';
   templateUrl: './search.html',
   styleUrl: './search.scss',
 })
-export class Search {
+export class Search implements OnInit {
   private notesApi = inject(NotesApi);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   protected readonly query = signal('');
   protected readonly results = signal<SearchResult[]>([]);
   protected readonly loading = signal(false);
   protected readonly searched = signal(false);
+
+  ngOnInit(): void {
+    const q = this.route.snapshot.queryParamMap.get('q');
+    if (q) {
+      this.query.set(q);
+      this.search();
+    }
+  }
 
   search(): void {
     const q = this.query().trim();

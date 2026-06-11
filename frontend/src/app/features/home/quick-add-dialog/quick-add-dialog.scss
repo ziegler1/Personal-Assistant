@@ -1,0 +1,25 @@
+.quick-add-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+  min-width: 280px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.type-field {
+  max-width: 200px;
+}
+
+.tags-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tag-input-field {
+  max-width: 280px;
+}

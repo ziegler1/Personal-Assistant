@@ -26,19 +26,14 @@
   } @else {
     <div class="file-list">
       @for (file of files(); track file.id) {
-        <div class="app-card file-row">
-          <mat-icon class="file-icon">description</mat-icon>
-          <div class="file-info">
-            <span class="file-name">{{ file.filename }}</span>
-            <span class="file-meta">
-              {{ formatSize(file.size_bytes) }}
-              @if (file.note_title && file.note_id) {
-                · linked to
-                <button class="link-button" (click)="openNote(file.note_id)">{{ file.note_title }}</button>
-              }
-              · {{ file.created_at | date: 'MMM d, y' }}
-            </span>
-          </div>
+        <div class="file-row">
+          <mat-icon class="file-icon">{{ fileIcon(file.mime_type) }}</mat-icon>
+          <span class="file-name">{{ file.filename }}</span>
+          @if (file.note_title && file.note_id) {
+            <button class="link-button" (click)="openNote(file.note_id)">{{ file.note_title }}</button>
+          }
+          <span class="file-size">{{ formatSize(file.size_bytes) }}</span>
+          <span class="file-date">{{ file.created_at | date: 'MMM d, y' }}</span>
           <div class="file-actions">
             <button mat-icon-button (click)="download(file)" aria-label="Download file">
               <mat-icon>download</mat-icon>
