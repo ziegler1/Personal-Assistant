@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,12 +9,21 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { NotesApi } from '../../../core/services/notes';
-import { CONTENT_TYPES, ContentType, NoteFile } from '../../../core/models/note.model';
+import { CONTENT_TYPES, ContentType, Note, NoteFile } from '../../../core/models/note.model';
+
+interface NoteFormSnapshot {
+  title: string;
+  content: string;
+  contentType: ContentType;
+  source: string;
+  tags: string[];
+}
 
 @Component({
   selector: 'app-note-editor',
   imports: [
     FormsModule,
+    DatePipe,
     MatButtonModule,
     MatIconModule,
     MatFormFieldModule,
@@ -31,18 +41,26 @@ export class NoteEditor implements OnInit {
 
   protected readonly contentTypes = CONTENT_TYPES;
   protected readonly noteId = signal<string | null>(null);
+  protected readonly mode = signal<'view' | 'edit'>('edit');
   protected readonly title = signal('');
   protected readonly content = signal('');
   protected readonly contentType = signal<ContentType>('text');
   protected readonly source = signal('');
   protected readonly tags = signal<string[]>([]);
   protected readonly tagInput = signal('');
+  protected readonly updatedAt = signal('');
   protected readonly files = signal<NoteFile[]>([]);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
 
+  private snapshot: NoteFormSnapshot | null = null;
+
   protected get isNew(): boolean {
     return this.noteId() === null;
+  }
+
+  protected get sourceIsUrl(): boolean {
+    return /^https?:\/\//i.test(this.source());
   }
 
   ngOnInit(): void {
@@ -50,19 +68,32 @@ export class NoteEditor implements OnInit {
     if (!id) return;
 
     this.noteId.set(id);
+    this.mode.set('view');
     this.loading.set(true);
     this.notesApi.get(id).subscribe({
       next: (note) => {
-        this.title.set(note.title);
-        this.content.set(note.content);
-        this.contentType.set(note.content_type);
-        this.source.set(note.source ?? '');
-        this.tags.set(note.tags);
+        this.applyNote(note);
         this.files.set(note.files);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
+  }
+
+  private applyNote(note: Note): void {
+    this.title.set(note.title);
+    this.content.set(note.content);
+    this.contentType.set(note.content_type);
+    this.source.set(note.source ?? '');
+    this.tags.set(note.tags);
+    this.updatedAt.set(note.updated_at);
+    this.snapshot = {
+      title: note.title,
+      content: note.content,
+      contentType: note.content_type,
+      source: note.source ?? '',
+      tags: [...note.tags],
+    };
   }
 
   addTag(): void {
@@ -75,6 +106,10 @@ export class NoteEditor implements OnInit {
 
   removeTag(tag: string): void {
     this.tags.set(this.tags().filter((t) => t !== tag));
+  }
+
+  edit(): void {
+    this.mode.set('edit');
   }
 
   save(): void {
@@ -90,15 +125,24 @@ export class NoteEditor implements OnInit {
     };
 
     const id = this.noteId();
-    const request = id ? this.notesApi.update(id, input) : this.notesApi.create(input);
-
-    request.subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.router.navigate(['/notes']);
-      },
-      error: () => this.saving.set(false),
-    });
+    if (id) {
+      this.notesApi.update(id, input).subscribe({
+        next: (note) => {
+          this.saving.set(false);
+          this.applyNote(note);
+          this.mode.set('view');
+        },
+        error: () => this.saving.set(false),
+      });
+    } else {
+      this.notesApi.create(input).subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.router.navigate(['/notes']);
+        },
+        error: () => this.saving.set(false),
+      });
+    }
   }
 
   delete(): void {
@@ -108,6 +152,23 @@ export class NoteEditor implements OnInit {
   }
 
   cancel(): void {
+    if (this.isNew) {
+      this.router.navigate(['/notes']);
+      return;
+    }
+
+    if (this.snapshot) {
+      this.title.set(this.snapshot.title);
+      this.content.set(this.snapshot.content);
+      this.contentType.set(this.snapshot.contentType);
+      this.source.set(this.snapshot.source);
+      this.tags.set([...this.snapshot.tags]);
+    }
+    this.tagInput.set('');
+    this.mode.set('view');
+  }
+
+  backToList(): void {
     this.router.navigate(['/notes']);
   }
 }

@@ -1,23 +1,76 @@
 <div class="editor-page">
   <div class="page-header">
-    <h1>{{ isNew ? 'New Note' : 'Edit Note' }}</h1>
+    <h1>{{ isNew ? 'New Note' : mode() === 'edit' ? 'Edit Note' : title() }}</h1>
     <div class="header-actions">
-      @if (!isNew) {
+      @if (mode() === 'view') {
         <button mat-stroked-button color="warn" (click)="delete()">
           <mat-icon>delete</mat-icon>
           Delete
         </button>
+        <button mat-stroked-button (click)="backToList()">Back</button>
+        <button mat-flat-button color="primary" (click)="edit()">
+          <mat-icon>edit</mat-icon>
+          Edit
+        </button>
+      } @else {
+        @if (!isNew) {
+          <button mat-stroked-button color="warn" (click)="delete()">
+            <mat-icon>delete</mat-icon>
+            Delete
+          </button>
+        }
+        <button mat-stroked-button (click)="cancel()">Cancel</button>
+        <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || !title().trim()">
+          <mat-icon>save</mat-icon>
+          Save
+        </button>
       }
-      <button mat-stroked-button (click)="cancel()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || !title().trim()">
-        <mat-icon>save</mat-icon>
-        Save
-      </button>
     </div>
   </div>
 
   @if (loading()) {
     <p class="status-text">Loading…</p>
+  } @else if (mode() === 'view') {
+    <div class="app-card note-detail">
+      <div class="detail-meta">
+        <span class="type-badge">{{ contentType() }}</span>
+        @if (source()) {
+          <span class="detail-source">
+            Source:
+            @if (sourceIsUrl) {
+              <a [href]="source()" target="_blank" rel="noopener">{{ source() }}</a>
+            } @else {
+              {{ source() }}
+            }
+          </span>
+        }
+        <span class="detail-date">Updated {{ updatedAt() | date: 'MMM d, y, h:mm a' }}</span>
+      </div>
+
+      @if (tags().length > 0) {
+        <mat-chip-set>
+          @for (tag of tags(); track tag) {
+            <mat-chip>{{ tag }}</mat-chip>
+          }
+        </mat-chip-set>
+      }
+
+      <pre class="detail-content" [class.detail-content-code]="contentType() === 'code'">{{ content() }}</pre>
+
+      @if (files().length > 0) {
+        <div class="files-section">
+          <label class="field-label">Attached files</label>
+          <ul class="file-list">
+            @for (file of files(); track file.id) {
+              <li>
+                <mat-icon>attach_file</mat-icon>
+                <span>{{ file.filename }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
   } @else {
     <div class="app-card editor-form">
       <mat-form-field appearance="outline">
