@@ -186,11 +186,18 @@ outside Docker.
 3. **Frontend service**:
    - Deploy from this repo using `docker/frontend.Dockerfile`, build context
      set to the repo root.
-   - Set `BACKEND_HOST` and `BACKEND_PORT` to point at the backend service's
-     internal Railway hostname/port (e.g. `backend.railway.internal` / `3000`)
-     so nginx can reverse-proxy `/api/*` to it.
+   - Set `BACKEND_HOST` to the backend service's **internal Railway
+     hostname**: `<backend-service-name>.railway.internal` (replace
+     `<backend-service-name>` with whatever you named the backend service in
+     your Railway project - the Dockerfile's default `BACKEND_HOST=backend`
+     is only valid for docker-compose and will not resolve on Railway). Set
+     `BACKEND_PORT=3000`.
    - Railway sets `PORT` automatically; the nginx template listens on
      `${PORT}`.
+   - The nginx template resolves `BACKEND_HOST` at request time using the
+     resolver from the container's `/etc/resolv.conf` (works automatically on
+     both docker-compose and Railway), so a temporarily-unreachable backend
+     returns a `502` instead of crashing the frontend container.
 
 4. Once both services are deployed, open the frontend's public URL.
 

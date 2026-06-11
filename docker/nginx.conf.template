@@ -4,10 +4,23 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    # DNS resolver used to look up the backend host at request time.
+    # NGINX_LOCAL_RESOLVERS is auto-populated from /etc/resolv.conf by the
+    # image's 15-local-resolvers.envsh entrypoint script (enabled via
+    # NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 in the Dockerfile), so this works
+    # for both Docker's embedded DNS and platform-specific resolvers (e.g.
+    # Railway's private network).
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;
+
     # Reverse proxy API calls to the backend service so the SPA can always
     # call same-origin "/api/..." regardless of where it's deployed.
+    # Using a variable forces nginx to resolve BACKEND_HOST via the resolver
+    # above at request time instead of once at startup, so the frontend
+    # doesn't fail to start if the backend isn't resolvable yet and keeps
+    # working if the backend's address changes after a redeploy.
     location /api/ {
-        proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT}/api/;
+        set $backend_upstream http://${BACKEND_HOST}:${BACKEND_PORT};
+        proxy_pass $backend_upstream;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

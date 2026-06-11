@@ -12,4 +12,5 @@ COPY docker/nginx.conf.template /etc/nginx/templates/default.conf.template
 ENV PORT=80
 ENV BACKEND_HOST=backend
 ENV BACKEND_PORT=3000
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 EXPOSE 80
