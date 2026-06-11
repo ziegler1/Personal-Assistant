@@ -93,9 +93,9 @@ export class NoteEditor implements OnInit {
     const request = id ? this.notesApi.update(id, input) : this.notesApi.create(input);
 
     request.subscribe({
-      next: (note) => {
+      next: () => {
         this.saving.set(false);
-        this.router.navigate(['/notes', note.id]);
+        this.router.navigate(['/notes']);
       },
       error: () => this.saving.set(false),
     });

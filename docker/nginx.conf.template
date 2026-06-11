@@ -4,6 +4,10 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    # Allow file uploads up to 50MB (matches the multer limit in
+    # backend/src/routes/files.routes.ts).
+    client_max_body_size 50M;
+
     # DNS resolver used to look up the backend host at request time.
     # NGINX_LOCAL_RESOLVERS is auto-populated from /etc/resolv.conf by the
     # image's 15-local-resolvers.envsh entrypoint script (enabled via

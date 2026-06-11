@@ -6,7 +6,7 @@ import * as r2 from '../services/r2Service';
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 25 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 },
 });
 
 const router = Router();
