@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zig's Personal Assistant</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-elevated: #243047;
+      --border: #334155;
+      --accent: #06b6d4;
+      --accent-hover: #22d3ee;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+
+    header {
+      padding: 64px 24px 32px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 2.25rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 24px;
+    }
+
+    .links a {
+      display: inline-block;
+      padding: 10px 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .links a:hover {
+      border-color: var(--accent);
+      color: var(--accent-hover);
+      text-decoration: none;
+    }
+
+    h2 {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin-top: 48px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: var(--accent);
+      font-size: 1.05rem;
+    }
+
+    .card p {
+      margin-bottom: 0;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    code {
+      background: var(--surface-elevated);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.9em;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Zig's Personal Assistant</h1>
+    <p>
+      A self-hosted personal knowledge base: capture notes, files, and links,
+      search them with hybrid keyword + semantic search, and chat with an AI
+      assistant that cites your own notes as sources.
+    </p>
+    <div class="links">
+      <a href="https://github.com/ziegler1/Personal-Assistant">GitHub repo</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="plan.html">Plan &amp; next steps</a>
+    </div>
+  </header>
+
+  <main>
+    <h2>Features</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Notes</h3>
+        <p>Create, edit, and tag notes with a title, content, content type, and source.</p>
+      </div>
+      <div class="card">
+        <h3>Hybrid search</h3>
+        <p>Combines PostgreSQL full-text search with pgvector semantic similarity, with highlighted snippets.</p>
+      </div>
+      <div class="card">
+        <h3>AI chat</h3>
+        <p>Ask questions about your notes; the assistant retrieves relevant notes and answers with citations.</p>
+      </div>
+      <div class="card">
+        <h3>File storage</h3>
+        <p>Drag-and-drop file uploads to Cloudflare R2, optionally linked to a note.</p>
+      </div>
+      <div class="card">
+        <h3>Pluggable AI providers</h3>
+        <p>Switch between Claude + Cohere, OpenAI, or a fully local Ollama setup via one env var.</p>
+      </div>
+    </div>
+
+    <h2>Tech stack</h2>
+    <table>
+      <tr><th>Layer</th><th>Technology</th></tr>
+      <tr><td>Frontend</td><td>Angular 22 (standalone components, signals, Angular Material, dark theme)</td></tr>
+      <tr><td>Backend</td><td>Node.js, Express, TypeScript</td></tr>
+      <tr><td>Database</td><td>PostgreSQL + pgvector (hybrid full-text + vector search)</td></tr>
+      <tr><td>File storage</td><td>Cloudflare R2 (S3-compatible)</td></tr>
+      <tr><td>AI chat</td><td><code>claude-sonnet-4-5</code>, OpenAI, or local Ollama</td></tr>
+      <tr><td>AI embeddings</td><td>Cohere <code>embed-english-v3.0</code>, OpenAI <code>text-embedding-3-small</code>, or local <code>nomic-embed-text</code></td></tr>
+      <tr><td>Hosting</td><td>Railway (Docker images for backend + frontend)</td></tr>
+    </table>
+
+    <h2>Learn more</h2>
+    <p>
+      See the <a href="architecture.html">architecture page</a> for a full
+      breakdown of the frontend, backend, database schema, AI provider
+      abstraction, and deployment topology, or the
+      <a href="plan.html">plan page</a> for what's been built so far and
+      what's next.
+    </p>
+  </main>
+
+  <footer>
+    Zig's Personal Assistant &mdash; <a href="https://github.com/ziegler1/Personal-Assistant">source on GitHub</a>
+  </footer>
+</body>
+</html>
