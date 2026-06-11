@@ -177,10 +177,13 @@ outside Docker.
 2. **Backend service**:
    - Deploy from this repo using `docker/backend.Dockerfile` as the
      Dockerfile path, with build context set to the repo root.
-   - Set environment variables: `DATABASE_URL` (from your Postgres service),
-     `AI_PROVIDER` and the matching API key(s), `R2_*` credentials,
-     `CORS_ORIGIN` (your frontend's Railway URL), and `PORT` (Railway sets
-     this automatically - the app reads `process.env.PORT`).
+   - Set environment variables: `DATABASE_URL=${{<postgres-service-name>.DATABASE_URL}}`
+     (a Railway variable reference to your Postgres service - without this,
+     `DATABASE_URL` is empty and the app falls back to `127.0.0.1:5432`,
+     causing migrations to crash-loop with `ECONNREFUSED`), `AI_PROVIDER` and
+     the matching API key(s), `R2_*` credentials, `CORS_ORIGIN` (your
+     frontend's Railway URL), and `PORT` (Railway sets this automatically -
+     the app reads `process.env.PORT`).
    - Migrations run automatically on startup.
 
 3. **Frontend service**:
