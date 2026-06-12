@@ -11,7 +11,7 @@ import notesRoutes from './routes/notes.routes';
 const app = express();
 
 app.use(cors({ origin: config.corsOrigin }));
-app.use(express.json({ limit: '5mb' }));
+app.use(express.json({ limit: '10mb' }));
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', aiProvider: config.aiProvider });

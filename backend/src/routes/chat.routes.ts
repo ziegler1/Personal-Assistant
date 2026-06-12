@@ -31,7 +31,14 @@ router.post('/', async (req, res, next) => {
 
     const result = await chatService.chat(messages, { contentType });
 
-    await chatService.saveMessage('assistant', result.reply, result.sources, result.webResults);
+    await chatService.saveMessage(
+      'assistant',
+      result.reply,
+      result.sources,
+      result.webResults,
+      result.webSearchAnswer,
+      result.webSearchQuery
+    );
 
     res.json(result);
   } catch (err) {

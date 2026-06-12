@@ -31,6 +31,8 @@ interface DisplayWebResult extends ChatWebResult {
 interface DisplayMessage extends ChatMessage {
   sources?: ChatSource[] | null;
   webResults?: DisplayWebResult[] | null;
+  webSearchAnswer?: string | null;
+  webSearchQuery?: string | null;
   generating?: boolean;
   streaming?: boolean;
   created_at: string;
@@ -152,6 +154,8 @@ export class Chat implements OnInit {
           content: m.content,
           sources: m.sources,
           webResults: m.web_results,
+          webSearchAnswer: m.web_search_answer,
+          webSearchQuery: m.web_search_query,
           created_at: m.created_at,
         }));
         this.messages.set(messages);
@@ -199,6 +203,8 @@ export class Chat implements OnInit {
           content: '',
           sources: res.sources,
           webResults: res.webResults,
+          webSearchAnswer: res.webSearchAnswer,
+          webSearchQuery: res.webSearchQuery,
           created_at: new Date().toISOString(),
           streaming: true,
         };
@@ -286,24 +292,35 @@ export class Chat implements OnInit {
     });
   }
 
-  saveWebResult(result: DisplayWebResult): void {
+  saveWebResult(message: DisplayMessage, result: DisplayWebResult): void {
     if (result.saved) return;
+
+    const query = message.webSearchQuery || result.title;
 
     this.notesApi
       .create({
-        title: result.title,
-        content: result.content,
+        title: `Search: ${query}`,
+        content: buildWebSearchNoteContent(message),
         content_type: 'link',
-        source: result.url,
+        source: query,
         tags: [],
       })
       .subscribe({
         next: () => {
-          result.saved = true;
+          for (const r of message.webResults ?? []) r.saved = true;
           this.messages.set([...this.messages()]);
         },
       });
   }
+}
+
+// Concatenates the search summary and full raw content of every result into a
+// single markdown note, so saving captures the whole search rather than one snippet.
+function buildWebSearchNoteContent(message: DisplayMessage): string {
+  const results = message.webResults ?? [];
+  const sections = results.map((r) => `### ${r.title}\nURL: ${r.url}\n${r.raw_content || r.content}`);
+
+  return `## Summary\n${message.webSearchAnswer ?? ''}\n\n## Sources\n\n${sections.join('\n\n---\n\n')}`;
 }
 
 function formatDateKey(iso: string): string {

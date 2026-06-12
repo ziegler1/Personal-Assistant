@@ -13,12 +13,15 @@ export interface ChatWebResult {
   title: string;
   url: string;
   content: string;
+  raw_content: string;
 }
 
 export interface ChatResult {
   reply: string;
   sources: ChatSource[];
   webResults: ChatWebResult[];
+  webSearchAnswer: string | null;
+  webSearchQuery: string | null;
 }
 
 export interface ChatOptions {
@@ -30,6 +33,8 @@ export interface ChatHistoryMessage {
   content: string;
   sources: ChatSource[] | null;
   web_results: ChatWebResult[] | null;
+  web_search_answer: string | null;
+  web_search_query: string | null;
   created_at: string;
 }
 
@@ -50,6 +55,8 @@ export async function chat(messages: Message[], opts: ChatOptions = {}): Promise
   let sources: { id: string; title: string; content: string; content_type: ContentType; filename: string | null }[] =
     [];
   let webResults: ChatWebResult[] = [];
+  let webSearchAnswer: string | null = null;
+  let webSearchQuery: string | null = null;
   let providerMessages = messages;
   let allTitles: string[] | null = null;
 
@@ -122,7 +129,10 @@ export async function chat(messages: Message[], opts: ChatOptions = {}): Promise
 
     if (query && (forceWebSearch || topSimilarity < WEB_SEARCH_SIMILARITY_THRESHOLD)) {
       try {
-        webResults = await getWebSearchProvider().webSearch(query);
+        const searchResponse = await getWebSearchProvider().webSearch(query);
+        webResults = searchResponse.results;
+        webSearchAnswer = searchResponse.answer;
+        webSearchQuery = query;
       } catch (err) {
         console.error('Web search failed:', err);
       }
@@ -147,6 +157,8 @@ export async function chat(messages: Message[], opts: ChatOptions = {}): Promise
     reply,
     sources: sources.map((s) => ({ id: s.id, title: s.title })),
     webResults,
+    webSearchAnswer,
+    webSearchQuery,
   };
 }
 
@@ -154,15 +166,20 @@ export async function saveMessage(
   role: 'user' | 'assistant',
   content: string,
   sources?: ChatSource[],
-  webResults?: ChatWebResult[]
+  webResults?: ChatWebResult[],
+  webSearchAnswer?: string | null,
+  webSearchQuery?: string | null
 ): Promise<void> {
   await pool.query(
-    `INSERT INTO chat_messages (role, content, sources, web_results) VALUES ($1, $2, $3, $4)`,
+    `INSERT INTO chat_messages (role, content, sources, web_results, web_search_answer, web_search_query)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
     [
       role,
       content,
       sources && sources.length ? JSON.stringify(sources) : null,
       webResults && webResults.length ? JSON.stringify(webResults) : null,
+      webSearchAnswer ?? null,
+      webSearchQuery ?? null,
     ]
   );
 
@@ -174,7 +191,8 @@ export async function saveMessage(
 
 export async function getRecentMessages(limit = 20): Promise<ChatHistoryMessage[]> {
   const { rows } = await pool.query<ChatHistoryMessage>(
-    `SELECT role, content, sources, web_results, created_at FROM chat_messages ORDER BY created_at DESC LIMIT $1`,
+    `SELECT role, content, sources, web_results, web_search_answer, web_search_query, created_at
+     FROM chat_messages ORDER BY created_at DESC LIMIT $1`,
     [limit]
   );
   return rows.reverse();

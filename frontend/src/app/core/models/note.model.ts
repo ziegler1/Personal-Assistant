@@ -52,12 +52,15 @@ export interface ChatWebResult {
   title: string;
   url: string;
   content: string;
+  raw_content: string;
 }
 
 export interface ChatResponse {
   reply: string;
   sources: ChatSource[];
   webResults: ChatWebResult[];
+  webSearchAnswer: string | null;
+  webSearchQuery: string | null;
 }
 
 export interface ChatHistoryMessage {
@@ -65,6 +68,8 @@ export interface ChatHistoryMessage {
   content: string;
   sources: ChatSource[] | null;
   web_results: ChatWebResult[] | null;
+  web_search_answer: string | null;
+  web_search_query: string | null;
   created_at: string;
 }
 

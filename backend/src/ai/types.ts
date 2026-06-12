@@ -15,8 +15,14 @@ export interface WebSearchResult {
   title: string;
   url: string;
   content: string;
+  raw_content: string;
+}
+
+export interface WebSearchResponse {
+  answer: string | null;
+  results: WebSearchResult[];
 }
 
 export interface WebSearchProvider {
-  webSearch(query: string): Promise<WebSearchResult[]>;
+  webSearch(query: string): Promise<WebSearchResponse>;
 }

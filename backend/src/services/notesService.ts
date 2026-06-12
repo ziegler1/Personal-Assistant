@@ -34,9 +34,16 @@ function toVectorLiteral(embedding: number[]): string {
   return `[${embedding.join(',')}]`;
 }
 
+// Embedding providers cap input size (e.g. Cohere embed-english-v3.0 accepts
+// ~512 tokens per text). Notes can be much longer than that, so embed only
+// the first chunk - the full text is always stored in the `content` column
+// regardless of this truncation.
+const EMBED_MAX_CHARS = 2000;
+
 async function embedText(text: string): Promise<string | null> {
   try {
-    const embedding = await getEmbeddingProvider().embed(text);
+    const chunk = text.length > EMBED_MAX_CHARS ? text.slice(0, EMBED_MAX_CHARS) : text;
+    const embedding = await getEmbeddingProvider().embed(chunk);
     return toVectorLiteral(embedding);
   } catch (err) {
     console.error('Embedding generation failed:', err);
