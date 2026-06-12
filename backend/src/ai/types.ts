@@ -9,3 +9,13 @@ export interface AIProvider {
   embed(text: string): Promise<number[]>;
   chat(messages: Message[], context: string[]): Promise<string>;
 }
+
+export interface WebSearchResult {
+  title: string;
+  url: string;
+  content: string;
+}
+
+export interface WebSearchProvider {
+  webSearch(query: string): Promise<WebSearchResult[]>;
+}

@@ -30,6 +30,26 @@
               }
             </div>
           }
+          @if (message.webResults && message.webResults.length > 0) {
+            <div class="web-results">
+              <span class="sources-label">From the web:</span>
+              @for (result of message.webResults; track result.url) {
+                <div class="web-result">
+                  <a class="web-result-title" [href]="result.url" target="_blank" rel="noopener">{{ result.title }}</a>
+                  <p class="web-result-content">{{ result.content }}</p>
+                  <button
+                    mat-stroked-button
+                    class="save-result-button"
+                    [disabled]="result.saved"
+                    (click)="saveWebResult(result)"
+                  >
+                    <mat-icon>{{ result.saved ? 'check' : 'bookmark_add' }}</mat-icon>
+                    {{ result.saved ? 'Saved to notes' : 'Save to notes' }}
+                  </button>
+                </div>
+              }
+            </div>
+          }
         </div>
       </div>
     }
@@ -50,7 +70,7 @@
         [ngModel]="input()"
         (ngModelChange)="input.set($event)"
         (keyup.enter)="send()"
-        placeholder="Ask about your notes…"
+        placeholder="Ask about your notes, or type 'search: ...' to search the web"
         [disabled]="loading()"
       />
     </mat-form-field>
@@ -59,4 +79,8 @@
       Send
     </button>
   </div>
+  <p class="input-hint">
+    Tip: start a message with <code>search:</code> to force a web search, or it'll happen automatically when your
+    notes don't have a good answer.
+  </p>
 </div>

@@ -7,11 +7,17 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialog } from '@angular/material/dialog';
 import { ChatApi } from '../../core/services/chat';
-import { CONTENT_TYPES, ChatMessage, ChatSource, ContentType } from '../../core/models/note.model';
+import { NotesApi } from '../../core/services/notes';
+import { CONTENT_TYPES, ChatMessage, ChatSource, ChatWebResult, ContentType } from '../../core/models/note.model';
 import { NotePreviewDialog } from './note-preview-dialog/note-preview-dialog';
+
+interface DisplayWebResult extends ChatWebResult {
+  saved?: boolean;
+}
 
 interface DisplayMessage extends ChatMessage {
   sources?: ChatSource[] | null;
+  webResults?: DisplayWebResult[] | null;
 }
 
 @Component({
@@ -29,6 +35,7 @@ interface DisplayMessage extends ChatMessage {
 })
 export class Chat implements OnInit {
   private chatApi = inject(ChatApi);
+  private notesApi = inject(NotesApi);
   private dialog = inject(MatDialog);
 
   protected readonly contentTypes = CONTENT_TYPES;
@@ -41,7 +48,14 @@ export class Chat implements OnInit {
   ngOnInit(): void {
     this.chatApi.history().subscribe({
       next: (res) => {
-        this.messages.set(res.messages.map((m) => ({ role: m.role, content: m.content, sources: m.sources })));
+        this.messages.set(
+          res.messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+            sources: m.sources,
+            webResults: m.web_results,
+          }))
+        );
         this.historyLoading.set(false);
       },
       error: () => this.historyLoading.set(false),
@@ -63,7 +77,7 @@ export class Chat implements OnInit {
       next: (res) => {
         this.messages.update((msgs) => [
           ...msgs,
-          { role: 'assistant', content: res.reply, sources: res.sources },
+          { role: 'assistant', content: res.reply, sources: res.sources, webResults: res.webResults },
         ]);
         this.loading.set(false);
       },
@@ -83,5 +97,24 @@ export class Chat implements OnInit {
       maxWidth: '90vw',
       data: { noteId: id },
     });
+  }
+
+  saveWebResult(result: DisplayWebResult): void {
+    if (result.saved) return;
+
+    this.notesApi
+      .create({
+        title: result.title,
+        content: result.content,
+        content_type: 'link',
+        source: result.url,
+        tags: [],
+      })
+      .subscribe({
+        next: () => {
+          result.saved = true;
+          this.messages.set([...this.messages()]);
+        },
+      });
   }
 }

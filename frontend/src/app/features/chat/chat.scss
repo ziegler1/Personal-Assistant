@@ -93,6 +93,56 @@
   }
 }
 
+.web-results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.web-result {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  background: var(--app-surface-elevated);
+}
+
+.web-result-title {
+  color: var(--app-accent);
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.web-result-content {
+  margin: 0;
+  color: var(--app-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.save-result-button {
+  align-self: flex-start;
+  font-size: 0.8rem;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+  }
+}
+
 .chat-input {
   display: flex;
   gap: 12px;
@@ -101,4 +151,17 @@
 
 .chat-field {
   flex: 1;
+}
+
+.input-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--app-text-muted);
+
+  code {
+    background: var(--app-surface-elevated);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.8rem;
+  }
 }

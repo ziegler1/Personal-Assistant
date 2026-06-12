@@ -1,12 +1,14 @@
 import { config } from '../config';
-import { AIProvider } from './types';
+import { AIProvider, WebSearchProvider } from './types';
 import { ClaudeProvider } from './claudeProvider';
 import { CohereProvider } from './cohereProvider';
 import { OllamaProvider } from './ollamaProvider';
 import { OpenAIProvider } from './openaiProvider';
+import { TavilyProvider } from './tavilyProvider';
 
 let chatProvider: AIProvider | undefined;
 let embeddingProvider: AIProvider | undefined;
+let webSearchProvider: WebSearchProvider | undefined;
 
 export function getChatProvider(): AIProvider {
   if (!chatProvider) {
@@ -42,6 +44,13 @@ export function getEmbeddingProvider(): AIProvider {
     }
   }
   return embeddingProvider;
+}
+
+export function getWebSearchProvider(): WebSearchProvider {
+  if (!webSearchProvider) {
+    webSearchProvider = new TavilyProvider();
+  }
+  return webSearchProvider;
 }
 
 export * from './types';

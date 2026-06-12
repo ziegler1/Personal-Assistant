@@ -35,6 +35,8 @@ export const config = {
   ollamaChatModel: process.env.OLLAMA_CHAT_MODEL || 'qwen3:8b',
   ollamaEmbedModel: process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text',
 
+  tavilyApiKey: process.env.TAVILY_API_KEY || '',
+
   r2: {
     accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',

@@ -45,13 +45,21 @@ export interface ChatSource {
   title: string;
 }
 
+export interface ChatWebResult {
+  title: string;
+  url: string;
+  content: string;
+}
+
 export interface ChatResponse {
   reply: string;
   sources: ChatSource[];
+  webResults: ChatWebResult[];
 }
 
 export interface ChatHistoryMessage {
   role: 'user' | 'assistant';
   content: string;
   sources: ChatSource[] | null;
+  web_results: ChatWebResult[] | null;
 }

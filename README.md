@@ -147,6 +147,7 @@ outside Docker.
 | `OPENAI_API_KEY` | Required when `AI_PROVIDER=openai` |
 | `OLLAMA_BASE_URL` | Ollama server URL (default `http://ollama:11434` in Docker, `http://localhost:11434` locally) |
 | `OLLAMA_CHAT_MODEL` / `OLLAMA_EMBED_MODEL` | Default `qwen3:8b` / `nomic-embed-text` |
+| `TAVILY_API_KEY` | [Tavily](https://tavily.com) API key for web search in chat (`search:` prefix or low-confidence fallback). Optional - without it, web search is skipped and chat falls back to notes/general knowledge |
 | `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET_NAME` / `R2_ENDPOINT` | Cloudflare R2 credentials for file storage |
 | `PORT` | Backend port (default `3000`) |
 | `CORS_ORIGIN` | Allowed origin for the frontend (default `http://localhost:4200`) |
