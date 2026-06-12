@@ -1,5 +1,5 @@
 <div class="sidebar">
-  <a class="sidebar-header" routerLink="/" (click)="navigate.emit()">
+  <a class="sidebar-header" routerLink="/">
     <mat-icon class="logo-icon">auto_awesome</mat-icon>
     <span class="app-title">Zig's Personal Assistant</span>
   </a>
@@ -14,7 +14,7 @@
           routerLinkActive="active-link"
           [routerLinkActiveOptions]="{ exact: true }"
           class="nav-item"
-          (click)="navigate.emit()"
+          [class.nav-item-cta]="group.label === 'Create'"
         >
           <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
           <span matListItemTitle>{{ item.label }}</span>
@@ -22,4 +22,6 @@
       }
     }
   </mat-nav-list>
+
+  <div class="sidebar-footer">v1.0</div>
 </div>

@@ -17,29 +17,31 @@
   background: var(--app-bg);
 }
 
-.mobile-toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--app-surface);
-  border-bottom: 1px solid var(--app-border);
-  color: var(--app-text-primary);
-
-  .mobile-title {
-    margin-left: 8px;
-    font-size: 1.05rem;
-    font-weight: 600;
-  }
-}
-
 .page-content {
   padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
+
+  router-outlet + * {
+    display: block;
+    animation: route-fade-in 200ms ease-out;
+  }
+}
+
+@keyframes route-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 768px) {
   .page-content {
     padding: 16px;
+    padding-bottom: calc(var(--app-bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
   }
 }

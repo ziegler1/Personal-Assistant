@@ -104,11 +104,15 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  z-index: 5;
+  z-index: 10;
 }
 
 @media (max-width: 768px) {
   .recent-notes {
     display: none;
+  }
+
+  .quick-add-fab {
+    bottom: calc(var(--app-bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
   }
 }
