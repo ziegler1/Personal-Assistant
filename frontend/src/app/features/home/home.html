@@ -11,28 +11,81 @@
         #searchInput
         type="text"
         class="search-input"
-        placeholder="Search your notes…"
+        placeholder="Ask anything or search your notes…"
         [ngModel]="query()"
         (ngModelChange)="query.set($event)"
         (keyup.enter)="goSearch()"
         (click)="$event.stopPropagation()"
       />
+      <button mat-icon-button class="mic-button" disabled aria-label="Voice input (coming soon)" (click)="$event.stopPropagation()">
+        <mat-icon>mic</mat-icon>
+      </button>
       <button mat-icon-button class="go-button" (click)="$event.stopPropagation(); goSearch()" aria-label="Search">
         <mat-icon>arrow_forward</mat-icon>
       </button>
     </div>
+
+    <p class="stats-row">{{ noteCount() }} notes &middot; {{ fileCount() }} files &middot; last updated {{ lastUpdated() }}</p>
   </div>
 
-  @if (recentNotes().length > 0) {
-    <div class="recent-notes">
+  @if (recentNotesMobile().length > 0) {
+    <div class="recent-chips-section">
       <h2>Recent notes</h2>
-      <div class="recent-notes-list">
-        @for (note of recentNotes(); track note.id) {
-          <app-note-row [note]="note" (open)="openNote(note.id)" (delete)="deleteNote(note.id)" />
+      <div class="recent-chips">
+        @for (note of recentNotesMobile(); track note.id) {
+          <button class="note-chip" (click)="openNote(note.id)">
+            <span class="chip-title">{{ note.title }}</span>
+            <span class="chip-type">{{ note.content_type }}</span>
+          </button>
         }
       </div>
     </div>
   }
+
+  <div class="home-sections">
+    @if (recentNotes().length > 0) {
+      <div class="recent-notes">
+        <h2>Recent notes</h2>
+        <div class="notes-grid">
+          @for (note of recentNotes(); track note.id) {
+            <div class="note-card">
+              <app-note-row [note]="note" (open)="openNote(note.id)" (delete)="deleteNote(note.id)" />
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (recentChats().length > 0) {
+      <div class="recent-chats">
+        <h2>Recent chats</h2>
+        <div class="chat-list">
+          @for (chat of recentChats(); track chat.content + chat.time) {
+            <button class="chat-item" (click)="goChat()">
+              <mat-icon>forum</mat-icon>
+              <span class="chat-snippet">{{ chat.content }}</span>
+              <span class="chat-time">{{ chat.time }}</span>
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="quick-actions">
+    <button class="quick-action" (click)="openQuickAdd()">
+      <mat-icon>note_add</mat-icon>
+      <span>New Note</span>
+    </button>
+    <button class="quick-action" (click)="goFiles()">
+      <mat-icon>upload_file</mat-icon>
+      <span>Upload File</span>
+    </button>
+    <button class="quick-action" (click)="goChat()">
+      <mat-icon>forum</mat-icon>
+      <span>Start Chat</span>
+    </button>
+  </div>
 </div>
 
 <button mat-fab color="primary" class="quick-add-fab" (click)="openQuickAdd()" aria-label="Quick add note">
