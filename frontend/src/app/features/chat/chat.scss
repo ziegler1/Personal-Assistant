@@ -17,6 +17,13 @@
   flex-wrap: wrap;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .filter-field {
   width: 180px;
 
@@ -34,6 +41,36 @@
 
 .status-text {
   color: var(--app-text-muted);
+}
+
+.date-divider,
+.session-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0;
+  color: var(--app-text-muted);
+  font-size: 0.75rem;
+  text-align: center;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--app-border);
+  }
+}
+
+.session-divider {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  &::before,
+  &::after {
+    background: var(--app-accent);
+    opacity: 0.4;
+  }
 }
 
 .message {

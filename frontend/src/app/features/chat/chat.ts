@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, afterRenderEffect, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,7 +30,13 @@ interface DisplayMessage extends ChatMessage {
   sources?: ChatSource[] | null;
   webResults?: DisplayWebResult[] | null;
   generating?: boolean;
+  created_at: string;
 }
+
+type ThreadItem =
+  | { kind: 'date'; label: string; key: string }
+  | { kind: 'session' }
+  | { kind: 'message'; message: DisplayMessage; index: number };
 
 @Component({
   selector: 'app-chat',
@@ -59,6 +65,40 @@ export class Chat implements OnInit {
   protected readonly loading = signal(false);
   protected readonly historyLoading = signal(true);
   protected readonly contentTypeFilter = signal<ContentType | ''>('');
+  protected readonly sessionStartIndex = signal(0);
+  protected readonly threadRef = viewChild<ElementRef<HTMLElement>>('thread');
+
+  protected readonly threadItems = computed<ThreadItem[]>(() => {
+    const msgs = this.messages();
+    const sessionStart = this.sessionStartIndex();
+    const items: ThreadItem[] = [];
+    let lastDateKey: string | null = null;
+
+    msgs.forEach((message, index) => {
+      const dateKey = formatDateKey(message.created_at);
+      if (dateKey !== lastDateKey) {
+        items.push({ kind: 'date', label: formatDateLabel(message.created_at), key: dateKey });
+        lastDateKey = dateKey;
+      }
+      if (sessionStart > 0 && index === sessionStart) {
+        items.push({ kind: 'session' });
+      }
+      items.push({ kind: 'message', message, index });
+    });
+
+    return items;
+  });
+
+  constructor() {
+    afterRenderEffect(() => {
+      this.messages();
+      const el = this.threadRef()?.nativeElement;
+      const scrollContainer = el?.closest('mat-sidenav-content');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.chatApi.history().subscribe({
@@ -69,6 +109,7 @@ export class Chat implements OnInit {
             content: m.content,
             sources: m.sources,
             webResults: m.web_results,
+            created_at: m.created_at,
           }))
         );
         this.historyLoading.set(false);
@@ -81,29 +122,48 @@ export class Chat implements OnInit {
     const text = this.input().trim();
     if (!text || this.loading()) return;
 
-    this.messages.update((msgs) => [...msgs, { role: 'user', content: text }]);
+    this.messages.update((msgs) => [
+      ...msgs,
+      { role: 'user', content: text, created_at: new Date().toISOString() },
+    ]);
     this.input.set('');
     this.loading.set(true);
 
-    const history = this.messages().map(({ role, content }) => ({ role, content }));
+    const history = this.messages()
+      .slice(this.sessionStartIndex())
+      .map(({ role, content }) => ({ role, content }));
     const contentType = this.contentTypeFilter() || undefined;
 
     this.chatApi.send(history, contentType).subscribe({
       next: (res) => {
         this.messages.update((msgs) => [
           ...msgs,
-          { role: 'assistant', content: res.reply, sources: res.sources, webResults: res.webResults },
+          {
+            role: 'assistant',
+            content: res.reply,
+            sources: res.sources,
+            webResults: res.webResults,
+            created_at: new Date().toISOString(),
+          },
         ]);
         this.loading.set(false);
       },
       error: () => {
         this.messages.update((msgs) => [
           ...msgs,
-          { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' },
+          {
+            role: 'assistant',
+            content: 'Sorry, something went wrong. Please try again.',
+            created_at: new Date().toISOString(),
+          },
         ]);
         this.loading.set(false);
       },
     });
+  }
+
+  newSession(): void {
+    this.sessionStartIndex.set(this.messages().length);
   }
 
   openSource(id: string): void {
@@ -155,4 +215,24 @@ export class Chat implements OnInit {
         },
       });
   }
+}
+
+function formatDateKey(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function formatDateLabel(iso: string): string {
+  const date = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  if (isSameDay(date, today)) return 'Today';
+  if (isSameDay(date, yesterday)) return 'Yesterday';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function isSameDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }

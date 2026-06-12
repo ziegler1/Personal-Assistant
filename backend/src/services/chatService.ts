@@ -28,6 +28,7 @@ export interface ChatHistoryMessage {
   content: string;
   sources: ChatSource[] | null;
   web_results: ChatWebResult[] | null;
+  created_at: string;
 }
 
 function toVectorLiteral(embedding: number[]): string {
@@ -148,7 +149,7 @@ export async function saveMessage(
 
 export async function getRecentMessages(limit = 20): Promise<ChatHistoryMessage[]> {
   const { rows } = await pool.query<ChatHistoryMessage>(
-    `SELECT role, content, sources, web_results FROM chat_messages ORDER BY created_at DESC LIMIT $1`,
+    `SELECT role, content, sources, web_results, created_at FROM chat_messages ORDER BY created_at DESC LIMIT $1`,
     [limit]
   );
   return rows.reverse();

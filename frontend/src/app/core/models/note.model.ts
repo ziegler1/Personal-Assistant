@@ -62,6 +62,7 @@ export interface ChatHistoryMessage {
   content: string;
   sources: ChatSource[] | null;
   web_results: ChatWebResult[] | null;
+  created_at: string;
 }
 
 export type GenerateFormat = 'note-card' | 'workflow-diagram' | 'markdown-doc' | 'checklist';
