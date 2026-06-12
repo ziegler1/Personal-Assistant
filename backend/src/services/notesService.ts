@@ -43,6 +43,13 @@ async function embedText(text: string): Promise<string | null> {
   }
 }
 
+export async function listTags(): Promise<string[]> {
+  const { rows } = await pool.query<{ tag: string }>(
+    `SELECT DISTINCT unnest(tags) AS tag FROM notes ORDER BY tag`
+  );
+  return rows.map((r) => r.tag);
+}
+
 export async function listNotes(filter: ListNotesFilter = {}): Promise<Note[]> {
   const conditions: string[] = [];
   const params: unknown[] = [];

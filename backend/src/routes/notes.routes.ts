@@ -22,6 +22,15 @@ router.get('/search', async (req, res, next) => {
   }
 });
 
+router.get('/tags', async (_req, res, next) => {
+  try {
+    const tags = await notesService.listTags();
+    res.json({ tags });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/', async (req, res, next) => {
   try {
     const tag = req.query.tag ? String(req.query.tag) : undefined;

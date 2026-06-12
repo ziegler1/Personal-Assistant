@@ -36,6 +36,10 @@ export class NotesApi {
     return this.http.get<NoteWithFiles>(`${this.base}/${id}`);
   }
 
+  tags(): Observable<{ tags: string[] }> {
+    return this.http.get<{ tags: string[] }>(`${this.base}/tags`);
+  }
+
   create(input: CreateNoteInput): Observable<Note> {
     return this.http.post<Note>(this.base, input);
   }

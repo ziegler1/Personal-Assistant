@@ -1,8 +1,21 @@
 <div class="chat-page">
-  <h1>Chat</h1>
+  <div class="chat-header">
+    <h1>Chat</h1>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Search in</mat-label>
+      <mat-select [ngModel]="contentTypeFilter()" (ngModelChange)="contentTypeFilter.set($event)">
+        <mat-option value="">All notes</mat-option>
+        @for (type of contentTypes; track type) {
+          <mat-option [value]="type">{{ type }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
 
   <div class="chat-thread">
-    @if (messages().length === 0) {
+    @if (historyLoading()) {
+      <p class="status-text">Loading conversation…</p>
+    } @else if (messages().length === 0) {
       <p class="status-text">Ask a question about your notes to get started.</p>
     }
     @for (message of messages(); track $index) {

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { NotesApi } from '../../../core/services/notes';
 import { CONTENT_TYPES, ContentType, Note, NoteFile } from '../../../core/models/note.model';
 
@@ -30,6 +31,7 @@ interface NoteFormSnapshot {
     MatInputModule,
     MatSelectModule,
     MatChipsModule,
+    MatAutocompleteModule,
   ],
   templateUrl: './note-editor.html',
   styleUrl: './note-editor.scss',
@@ -48,6 +50,14 @@ export class NoteEditor implements OnInit {
   protected readonly source = signal('');
   protected readonly tags = signal<string[]>([]);
   protected readonly tagInput = signal('');
+  protected readonly allTags = signal<string[]>([]);
+  protected readonly filteredTags = computed(() => {
+    const input = this.tagInput().trim().toLowerCase();
+    const current = this.tags();
+    return this.allTags().filter(
+      (tag) => !current.includes(tag) && (!input || tag.toLowerCase().includes(input))
+    );
+  });
   protected readonly updatedAt = signal('');
   protected readonly files = signal<NoteFile[]>([]);
   protected readonly loading = signal(false);
@@ -64,6 +74,11 @@ export class NoteEditor implements OnInit {
   }
 
   ngOnInit(): void {
+    this.notesApi.tags().subscribe({
+      next: (res) => this.allTags.set(res.tags),
+      error: () => this.allTags.set([]),
+    });
+
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
 
@@ -100,6 +115,13 @@ export class NoteEditor implements OnInit {
     const value = this.tagInput().trim();
     if (value && !this.tags().includes(value)) {
       this.tags.set([...this.tags(), value]);
+    }
+    this.tagInput.set('');
+  }
+
+  selectTag(tag: string): void {
+    if (!this.tags().includes(tag)) {
+      this.tags.set([...this.tags(), tag]);
     }
     this.tagInput.set('');
   }

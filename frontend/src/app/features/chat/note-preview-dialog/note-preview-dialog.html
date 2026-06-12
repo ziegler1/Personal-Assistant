@@ -1,0 +1,39 @@
+<h2 mat-dialog-title>{{ note()?.title ?? 'Note' }}</h2>
+<mat-dialog-content class="preview-content">
+  @if (loading()) {
+    <p class="status-text">Loading…</p>
+  } @else if (note()) {
+    <div class="detail-meta">
+      <span class="type-badge">{{ note()!.content_type }}</span>
+      @if (note()!.source) {
+        <span class="detail-source">
+          Source:
+          @if (sourceIsUrl) {
+            <a [href]="note()!.source!" target="_blank" rel="noopener">{{ note()!.source }}</a>
+          } @else {
+            {{ note()!.source }}
+          }
+        </span>
+      }
+      <span class="detail-date">Updated {{ note()!.updated_at | date: 'MMM d, y, h:mm a' }}</span>
+    </div>
+
+    @if (note()!.tags.length > 0) {
+      <mat-chip-set>
+        @for (tag of note()!.tags; track tag) {
+          <mat-chip>{{ tag }}</mat-chip>
+        }
+      </mat-chip-set>
+    }
+
+    <pre class="preview-note-content" [class.preview-note-content-code]="note()!.content_type === 'code'">{{ note()!.content }}</pre>
+  } @else {
+    <p class="status-text">Note not found.</p>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Close</button>
+  @if (note()) {
+    <button mat-flat-button color="primary" (click)="openFull()">Open full note</button>
+  }
+</mat-dialog-actions>

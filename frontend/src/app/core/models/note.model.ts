@@ -49,3 +49,9 @@ export interface ChatResponse {
   reply: string;
   sources: ChatSource[];
 }
+
+export interface ChatHistoryMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  sources: ChatSource[] | null;
+}
