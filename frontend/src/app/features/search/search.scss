@@ -1,7 +1,7 @@
 .search-page {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 
   h1 {
     margin: 0;
@@ -11,14 +11,47 @@
 
 .search-bar {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  padding: 4px 8px 4px 20px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover,
+  &:focus-within {
+    border-color: var(--app-accent);
+    box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.2);
+  }
 }
 
-.search-field {
+.search-icon {
+  color: var(--app-text-secondary);
+  flex-shrink: 0;
+}
+
+.search-input {
   flex: 1;
-  min-width: 240px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--app-text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  padding: 12px 0;
+  min-width: 0;
+
+  &::placeholder {
+    color: var(--app-text-muted);
+  }
+}
+
+.clear-button {
+  flex-shrink: 0;
+  --mat-icon-button-state-layer-color: var(--app-text-secondary);
+  color: var(--app-text-muted);
 }
 
 .relevance-control {
@@ -42,40 +75,154 @@
   color: var(--app-text-secondary);
 }
 
-.results-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.result-card {
-  cursor: pointer;
+.recent-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: border-color 0.15s ease;
+}
 
-  &:hover {
-    border-color: var(--app-accent);
+.recent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--app-text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
 }
 
-.result-header {
+.recent-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 4px;
+  border: none;
+  border-bottom: 1px solid var(--app-border);
+  background: none;
+  color: var(--app-text-primary);
+  font-size: 0.95rem;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--app-transition);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--app-surface);
+  }
+
+  mat-icon {
+    flex-shrink: 0;
+    color: var(--app-text-muted);
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 20px;
+  color: var(--app-text-secondary);
+  text-align: center;
+
+  .empty-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 64px;
+    color: var(--app-text-muted);
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.result-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--app-border);
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--app-surface);
+  }
+}
+
+.result-row-line {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
+  min-width: 0;
+}
 
-  h3 {
-    margin: 0;
-    font-size: 1.05rem;
-  }
+.result-title {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.type-badge {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--app-accent);
+  background: rgba(6, 182, 212, 0.12);
+  border-radius: 4px;
+  padding: 2px 6px;
 }
 
 .result-score {
+  flex-shrink: 0;
   color: var(--app-accent);
+  font-weight: 600;
   font-size: 0.8rem;
   white-space: nowrap;
+}
+
+.result-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tag-chip {
+  font-size: 0.75rem;
+  color: var(--app-text-secondary);
+  background: var(--app-surface-2);
+  border-radius: 4px;
+  padding: 1px 6px;
 }
 
 .result-snippet {
@@ -85,9 +232,10 @@
   line-height: 1.5;
 
   ::ng-deep b {
-    color: var(--app-text-primary);
-    background: rgba(6, 182, 212, 0.25);
+    color: var(--app-accent);
+    background: rgba(6, 182, 212, 0.15);
     border-radius: 3px;
     padding: 0 2px;
+    font-weight: 600;
   }
 }
