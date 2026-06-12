@@ -70,63 +70,109 @@ export class Chat implements OnInit {
   protected readonly contentTypeFilter = signal<ContentType | ''>('');
   protected readonly sessionStartIndex = signal(0);
   protected readonly collapsedDates = signal<ReadonlySet<string>>(new Set());
-  protected readonly bottomRef = viewChild<ElementRef<HTMLElement>>('bottom');
+  protected readonly threadRef = viewChild<ElementRef<HTMLElement>>('thread');
 
+  // Newest-first: group messages into exchanges (a user message plus its assistant
+  // reply, or a lone leading/trailing message) so each exchange reads top-to-bottom
+  // in its natural order, while exchanges themselves are listed newest-first.
   protected readonly threadItems = computed<ThreadItem[]>(() => {
     const msgs = this.messages();
     const sessionStart = this.sessionStartIndex();
     const collapsed = this.collapsedDates();
     const items: ThreadItem[] = [];
-    let lastDateKey: string | null = null;
 
-    msgs.forEach((message, index) => {
-      const dateKey = formatDateKey(message.created_at);
+    const exchanges: { startIndex: number; entries: { message: DisplayMessage; index: number }[] }[] = [];
+    for (let i = 0; i < msgs.length; ) {
+      const entries = [{ message: msgs[i], index: i }];
+      if (i + 1 < msgs.length && msgs[i].role === 'user' && msgs[i + 1].role === 'assistant') {
+        entries.push({ message: msgs[i + 1], index: i + 1 });
+        i += 2;
+      } else {
+        i += 1;
+      }
+      exchanges.push({ startIndex: entries[0].index, entries });
+    }
+
+    let lastDateKey: string | null = null;
+    let sessionDividerShown = sessionStart === 0;
+
+    for (let e = exchanges.length - 1; e >= 0; e--) {
+      const exchange = exchanges[e];
+      const first = exchange.entries[0].message;
+      const dateKey = formatDateKey(first.created_at);
+
       if (dateKey !== lastDateKey) {
         items.push({
           kind: 'date',
-          label: formatDateLabel(message.created_at),
+          label: formatDateLabel(first.created_at),
           key: dateKey,
           collapsed: collapsed.has(dateKey),
         });
         lastDateKey = dateKey;
       }
-      if (collapsed.has(dateKey)) return;
-      if (sessionStart > 0 && index === sessionStart) {
+
+      if (collapsed.has(dateKey)) continue;
+
+      if (!sessionDividerShown && exchange.startIndex < sessionStart) {
         items.push({ kind: 'session' });
+        sessionDividerShown = true;
       }
-      items.push({ kind: 'message', message, index });
-    });
+
+      for (const { message, index } of exchange.entries) {
+        items.push({ kind: 'message', message, index });
+      }
+    }
 
     return items;
   });
 
-  private hasScrolledOnce = false;
+  private lastMessageCount = 0;
 
   constructor() {
+    // Newest messages render at the top of the thread, so keep it pinned to the
+    // top whenever a message is added (sent or received) rather than scrolling
+    // to the bottom. Token-by-token streaming updates don't change the array
+    // length, so they don't re-trigger a scroll.
     afterRenderEffect(() => {
-      this.messages();
-      const behavior: ScrollBehavior = this.hasScrolledOnce ? 'smooth' : 'auto';
-      this.bottomRef()?.nativeElement.scrollIntoView({ block: 'end', behavior });
-      this.hasScrolledOnce = true;
+      const count = this.messages().length;
+      const el = this.threadRef()?.nativeElement;
+      if (el && count !== this.lastMessageCount) {
+        const behavior: ScrollBehavior = this.lastMessageCount === 0 ? 'auto' : 'smooth';
+        el.scrollTo({ top: 0, behavior });
+      }
+      this.lastMessageCount = count;
     });
   }
 
   ngOnInit(): void {
     this.chatApi.history().subscribe({
       next: (res) => {
-        this.messages.set(
-          res.messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-            sources: m.sources,
-            webResults: m.web_results,
-            created_at: m.created_at,
-          }))
-        );
+        const messages = res.messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+          sources: m.sources,
+          webResults: m.web_results,
+          created_at: m.created_at,
+        }));
+        this.messages.set(messages);
+        this.collapseOlderDates(messages);
         this.historyLoading.set(false);
       },
       error: () => this.historyLoading.set(false),
     });
+  }
+
+  // Only the most recent date group is expanded by default; earlier days start collapsed.
+  private collapseOlderDates(msgs: DisplayMessage[]): void {
+    if (msgs.length === 0) return;
+
+    const latestKey = formatDateKey(msgs[msgs.length - 1].created_at);
+    const olderKeys = new Set<string>();
+    for (const m of msgs) {
+      const key = formatDateKey(m.created_at);
+      if (key !== latestKey) olderKeys.add(key);
+    }
+    this.collapsedDates.set(olderKeys);
   }
 
   send(): void {
