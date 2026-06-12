@@ -13,11 +13,44 @@
     <button mat-stroked-button (click)="fileInput.click()" [disabled]="uploading()">
       Browse files
     </button>
-    <input #fileInput type="file" multiple hidden (change)="onFileInputChange($event)" />
-    @if (uploading()) {
-      <p class="status-text">Uploading…</p>
-    }
+    <input #fileInput type="file" multiple hidden [accept]="acceptAttr" (change)="onFileInputChange($event)" />
+    <p class="accepted-types">PDF, PNG, JPG, TXT, MD, JSON · up to 50MB</p>
   </div>
+
+  @if (uploadItems().length > 0) {
+    <div class="upload-status">
+      @for (item of uploadItems(); track item.filename) {
+        <div class="upload-item">
+          <mat-icon
+            class="upload-item-icon"
+            [class.upload-item-icon-done]="item.status === 'done'"
+            [class.upload-item-icon-error]="item.status === 'error'"
+            >{{ item.status === 'done' ? 'check_circle' : item.status === 'error' ? 'error' : 'upload_file' }}</mat-icon
+          >
+          <div class="upload-item-body">
+            <span class="upload-filename">{{ item.filename }}</span>
+            @if (item.status === 'uploading') {
+              <mat-progress-bar mode="determinate" [value]="item.progress"></mat-progress-bar>
+            } @else if (item.status === 'done') {
+              <span class="upload-message upload-success">
+                Uploaded
+                @if (item.noteTitle) {
+                  — created note "{{ item.noteTitle }}"
+                }
+              </span>
+            } @else {
+              <span class="upload-message upload-error">{{ item.error }}</span>
+            }
+          </div>
+          @if (item.status !== 'uploading') {
+            <button mat-icon-button (click)="dismissUpload(item)" aria-label="Dismiss">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
 
   @if (loading()) {
     <p class="status-text">Loading files…</p>

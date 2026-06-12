@@ -1,5 +1,5 @@
 import { Service, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { NoteFile } from '../models/note.model';
 
@@ -12,11 +12,14 @@ export class FilesApi {
     return this.http.get<{ files: NoteFile[] }>(this.base);
   }
 
-  upload(file: File, noteId?: string): Observable<NoteFile> {
+  upload(file: File, noteId?: string): Observable<HttpEvent<NoteFile>> {
     const formData = new FormData();
     formData.append('file', file);
     if (noteId) formData.append('note_id', noteId);
-    return this.http.post<NoteFile>(`${this.base}/upload`, formData);
+    return this.http.post<NoteFile>(`${this.base}/upload`, formData, {
+      reportProgress: true,
+      observe: 'events',
+    });
   }
 
   getDownloadUrl(id: string): Observable<{ url: string }> {

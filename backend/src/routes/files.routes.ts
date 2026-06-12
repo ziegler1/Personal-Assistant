@@ -1,12 +1,29 @@
+import path from 'path';
 import { randomUUID } from 'crypto';
 import { Router } from 'express';
 import multer from 'multer';
 import { pool } from '../db/pool';
 import * as r2 from '../services/r2Service';
+import * as ingestion from '../services/ingestionService';
+
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
+const ACCEPTED_EXTENSIONS = new Set(['.pdf', '.png', '.jpg', '.jpeg', '.txt', '.md', '.json']);
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 },
+  limits: { fileSize: MAX_FILE_SIZE },
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!ACCEPTED_EXTENSIONS.has(ext)) {
+      return cb(
+        Object.assign(new Error('Unsupported file type. Accepted types: PDF, PNG, JPG, TXT, MD, JSON.'), {
+          status: 400,
+        })
+      );
+    }
+    cb(null, true);
+  },
 });
 
 const router = Router();
@@ -44,7 +61,27 @@ router.post('/upload', upload.single('file'), async (req, res, next) => {
       [noteId, key, req.file.originalname, req.file.mimetype, req.file.size]
     );
 
-    res.status(201).json(rows[0]);
+    const file = rows[0];
+    let noteTitle: string | undefined;
+
+    if (!noteId) {
+      let extractedText: string | undefined;
+      if (req.file.mimetype === 'application/pdf') {
+        extractedText = await ingestion.extractPdfText(req.file.buffer);
+      } else if (req.file.mimetype.startsWith('image/')) {
+        const ocrText = await ingestion.extractImageText(req.file.buffer);
+        if (ocrText) extractedText = ocrText;
+      }
+
+      if (extractedText !== undefined) {
+        const note = await ingestion.createNoteFromFileText(req.file.originalname, extractedText);
+        await pool.query('UPDATE files SET note_id = $1 WHERE id = $2', [note.id, file.id]);
+        file.note_id = note.id;
+        noteTitle = note.title;
+      }
+    }
+
+    res.status(201).json({ ...file, note_title: noteTitle });
   } catch (err) {
     next(err);
   }

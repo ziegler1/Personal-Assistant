@@ -1,14 +1,27 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { HttpEventType } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { FilesApi } from '../../core/services/files';
 import { NoteFile } from '../../core/models/note.model';
 
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
+const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.txt', '.md', '.json'];
+
+interface UploadItem {
+  filename: string;
+  progress: number;
+  status: 'uploading' | 'done' | 'error';
+  noteTitle?: string;
+  error?: string;
+}
+
 @Component({
   selector: 'app-files',
-  imports: [DatePipe, MatButtonModule, MatIconModule],
+  imports: [DatePipe, MatButtonModule, MatIconModule, MatProgressBarModule],
   templateUrl: './files.html',
   styleUrl: './files.scss',
 })
@@ -16,10 +29,12 @@ export class Files implements OnInit {
   private filesApi = inject(FilesApi);
   private router = inject(Router);
 
+  protected readonly acceptAttr = ACCEPTED_EXTENSIONS.join(',');
   protected readonly files = signal<NoteFile[]>([]);
   protected readonly loading = signal(false);
   protected readonly uploading = signal(false);
   protected readonly isDragging = signal(false);
+  protected readonly uploadItems = signal<UploadItem[]>([]);
 
   ngOnInit(): void {
     this.load();
@@ -73,6 +88,10 @@ export class Files implements OnInit {
     this.router.navigate(['/notes', noteId]);
   }
 
+  dismissUpload(item: UploadItem): void {
+    this.uploadItems.set(this.uploadItems().filter((i) => i !== item));
+  }
+
   formatSize(bytes: number | null): string {
     if (bytes === null) return '';
     if (bytes < 1024) return `${bytes} B`;
@@ -89,10 +108,28 @@ export class Files implements OnInit {
     return 'insert_drive_file';
   }
 
+  private validateFile(file: File): string | null {
+    if (file.size > MAX_FILE_SIZE) {
+      return 'File exceeds the 50MB size limit';
+    }
+    const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+    if (!ACCEPTED_EXTENSIONS.includes(ext)) {
+      return 'Unsupported file type. Accepted: PDF, PNG, JPG, TXT, MD, JSON';
+    }
+    return null;
+  }
+
   private uploadFiles(fileList: FileList): void {
+    const incoming = Array.from(fileList);
+    const items: UploadItem[] = incoming.map((file) => ({
+      filename: file.name,
+      progress: 0,
+      status: 'uploading',
+    }));
+    this.uploadItems.set(items);
     this.uploading.set(true);
-    const uploads = Array.from(fileList).map((file) => this.filesApi.upload(file));
-    let remaining = uploads.length;
+
+    let remaining = incoming.length;
     const onSettled = () => {
       remaining -= 1;
       if (remaining === 0) {
@@ -100,6 +137,39 @@ export class Files implements OnInit {
         this.load();
       }
     };
-    uploads.forEach((upload$) => upload$.subscribe({ next: onSettled, error: onSettled }));
+
+    incoming.forEach((file, index) => {
+      const item = items[index];
+
+      const validationError = this.validateFile(file);
+      if (validationError) {
+        item.status = 'error';
+        item.error = validationError;
+        this.uploadItems.set([...this.uploadItems()]);
+        onSettled();
+        return;
+      }
+
+      this.filesApi.upload(file).subscribe({
+        next: (event) => {
+          if (event.type === HttpEventType.UploadProgress && event.total) {
+            item.progress = Math.round((100 * event.loaded) / event.total);
+            this.uploadItems.set([...this.uploadItems()]);
+          } else if (event.type === HttpEventType.Response) {
+            item.status = 'done';
+            item.progress = 100;
+            item.noteTitle = event.body?.note_title;
+            this.uploadItems.set([...this.uploadItems()]);
+          }
+        },
+        error: (err) => {
+          item.status = 'error';
+          item.error = err?.error?.error || 'Upload failed';
+          this.uploadItems.set([...this.uploadItems()]);
+          onSettled();
+        },
+        complete: () => onSettled(),
+      });
+    });
   }
 }
