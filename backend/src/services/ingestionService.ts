@@ -39,10 +39,11 @@ export function noteTitleFromFilename(filename: string): string {
 export const NO_TEXT_EXTRACTED_PREFIX = 'No text could be extracted';
 
 export async function createNoteFromFileText(filename: string, text: string): Promise<Note> {
+  const hasText = text.length > 0;
   return createNote({
     title: noteTitleFromFilename(filename),
-    content: text || `${NO_TEXT_EXTRACTED_PREFIX} from "${filename}".`,
-    content_type: 'file',
+    content: hasText ? text : `${NO_TEXT_EXTRACTED_PREFIX} from "${filename}".`,
+    content_type: hasText ? 'text' : 'file',
     tags: [],
   });
 }
