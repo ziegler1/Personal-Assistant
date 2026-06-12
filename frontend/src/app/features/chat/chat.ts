@@ -34,7 +34,7 @@ interface DisplayMessage extends ChatMessage {
 }
 
 type ThreadItem =
-  | { kind: 'date'; label: string; key: string }
+  | { kind: 'date'; label: string; key: string; collapsed: boolean }
   | { kind: 'session' }
   | { kind: 'message'; message: DisplayMessage; index: number };
 
@@ -66,20 +66,28 @@ export class Chat implements OnInit {
   protected readonly historyLoading = signal(true);
   protected readonly contentTypeFilter = signal<ContentType | ''>('');
   protected readonly sessionStartIndex = signal(0);
-  protected readonly threadRef = viewChild<ElementRef<HTMLElement>>('thread');
+  protected readonly collapsedDates = signal<ReadonlySet<string>>(new Set());
+  protected readonly bottomRef = viewChild<ElementRef<HTMLElement>>('bottom');
 
   protected readonly threadItems = computed<ThreadItem[]>(() => {
     const msgs = this.messages();
     const sessionStart = this.sessionStartIndex();
+    const collapsed = this.collapsedDates();
     const items: ThreadItem[] = [];
     let lastDateKey: string | null = null;
 
     msgs.forEach((message, index) => {
       const dateKey = formatDateKey(message.created_at);
       if (dateKey !== lastDateKey) {
-        items.push({ kind: 'date', label: formatDateLabel(message.created_at), key: dateKey });
+        items.push({
+          kind: 'date',
+          label: formatDateLabel(message.created_at),
+          key: dateKey,
+          collapsed: collapsed.has(dateKey),
+        });
         lastDateKey = dateKey;
       }
+      if (collapsed.has(dateKey)) return;
       if (sessionStart > 0 && index === sessionStart) {
         items.push({ kind: 'session' });
       }
@@ -92,11 +100,7 @@ export class Chat implements OnInit {
   constructor() {
     afterRenderEffect(() => {
       this.messages();
-      const el = this.threadRef()?.nativeElement;
-      const scrollContainer = el?.closest('mat-sidenav-content');
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
+      this.bottomRef()?.nativeElement.scrollIntoView({ block: 'end' });
     });
   }
 
@@ -164,6 +168,18 @@ export class Chat implements OnInit {
 
   newSession(): void {
     this.sessionStartIndex.set(this.messages().length);
+  }
+
+  toggleDateGroup(key: string): void {
+    this.collapsedDates.update((dates) => {
+      const next = new Set(dates);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
   }
 
   openSource(id: string): void {

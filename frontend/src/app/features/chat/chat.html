@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <div class="chat-thread" #thread>
+  <div class="chat-thread">
     @if (historyLoading()) {
       <p class="status-text">Loading conversation…</p>
     } @else if (messages().length === 0) {
@@ -26,9 +26,14 @@
     }
     @for (item of threadItems(); track $index) {
       @if (item.kind === 'date') {
-        <div class="date-divider">
-          <span>{{ item.label }}</span>
-        </div>
+        <button class="date-divider" (click)="toggleDateGroup(item.key)">
+          <span class="divider-line"></span>
+          <span class="divider-label">
+            <mat-icon>{{ item.collapsed ? 'chevron_right' : 'expand_more' }}</mat-icon>
+            {{ item.label }}
+          </span>
+          <span class="divider-line"></span>
+        </button>
       } @else if (item.kind === 'session') {
         <div class="session-divider">
           <span>New session started</span>
@@ -98,6 +103,7 @@
         </div>
       </div>
     }
+    <div #bottom></div>
   </div>
 
   <div class="chat-input">
