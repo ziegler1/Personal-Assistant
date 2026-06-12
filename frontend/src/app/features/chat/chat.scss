@@ -327,6 +327,8 @@
 
 .chat-input-bar {
   flex-shrink: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--app-border);
 }
 
 .chat-input {
@@ -334,15 +336,16 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  background: var(--app-surface);
+  background: var(--app-surface-2);
   border: 1px solid var(--app-border);
   border-radius: 999px;
   padding: 4px 4px 4px 20px;
+  box-shadow: var(--app-shadow-md);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
   &:focus-within {
     border-color: var(--app-accent);
-    box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.2);
+    box-shadow: var(--app-shadow-md), 0 0 0 2px rgba(6, 182, 212, 0.25);
   }
 }
 
@@ -354,11 +357,11 @@
   color: var(--app-text-primary);
   font-size: 1rem;
   font-family: inherit;
-  padding: 12px 0;
+  padding: 14px 0;
   min-width: 0;
 
   &::placeholder {
-    color: var(--app-text-muted);
+    color: var(--app-text-secondary);
   }
 
   &:disabled {
