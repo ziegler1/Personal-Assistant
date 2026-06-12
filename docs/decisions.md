@@ -98,3 +98,13 @@ plan, flagged for review as potential next steps once all phases are done.
     prototype-chain inheritance + a shared module-level virtual filesystem
     singleton), but the actual PDF/PNG download + mermaid render flow should be
     smoke-tested in `ng serve` before relying on it.
+
+## Phase 8 — Infrastructure
+
+21. **README presents "Custom domain (Cloudflare)" before "Restricting access
+    with Cloudflare Access"**, reversing the plan's 8a/8b ordering. Cloudflare
+    Access requires the app to already be served from a Cloudflare-proxied
+    (orange cloud) hostname, which is what the custom domain section sets up -
+    so the Access section is written as a follow-on step that explicitly states
+    this prerequisite and points back at the custom domain section above it.
+    No code changes were needed for either section, per the plan's note for 8a.

@@ -210,6 +210,63 @@ outside Docker.
 
 4. Once both services are deployed, open the frontend's public URL.
 
+## Custom domain (Cloudflare)
+
+These steps point a domain you manage in Cloudflare at the frontend's Railway
+service, e.g. `pa.yourdomain.com` (a `pa.` subdomain keeps it consistent if
+you host other small apps as `<app>.yourdomain.com`).
+
+1. **Add the domain to Cloudflare** (if it isn't already) and switch its
+   nameservers to Cloudflare's.
+2. **Railway side**: open the frontend (`Personal-Assistant`) service →
+   **Settings → Networking → Custom Domain** → add `pa.yourdomain.com`.
+   Railway shows a CNAME target (something like
+   `<random>.up.railway.app`) and will issue a TLS certificate for the domain
+   automatically once DNS is verified (can take a few minutes).
+3. **Cloudflare side**: in the zone's DNS settings, add a `CNAME` record:
+   - Name: `pa`
+   - Target: the value Railway gave you
+   - Proxy status: **Proxied** (orange cloud) - required if you also want to
+     use Cloudflare Access (below)
+4. **TLS mode**: under SSL/TLS, set the encryption mode to **Full** or **Full
+   (strict)** - Railway already terminates TLS, so "Flexible" would cause
+   redirect loops.
+5. **Update `CORS_ORIGIN`** on the backend (`PA-Backend`) service to
+   `https://pa.yourdomain.com` so the API accepts requests from the new
+   domain.
+
+## Restricting access with Cloudflare Access
+
+The app currently has no built-in authentication (see
+[docs/plan.md](docs/plan.md)), so anyone with the URL can read/write notes and
+chat. Cloudflare Access (part of Cloudflare Zero Trust, free for small teams)
+adds a login wall in front of the site with no code changes - it sits entirely
+at Cloudflare's edge.
+
+**Prerequisite**: the app must be served from a Cloudflare-proxied (orange
+cloud) hostname, e.g. the `pa.yourdomain.com` setup above.
+
+1. Open the [Cloudflare Zero Trust dashboard](https://one.dash.cloudflare.com/)
+   for your account.
+2. Go to **Access → Applications → Add an application → Self-hosted**.
+3. Set the **Application domain** to `pa.yourdomain.com` (the custom domain
+   from above).
+4. Choose a **session duration** (how long a login lasts before re-auth is
+   required).
+5. Add an **Access policy**, e.g. an "Allow" rule for your email address using
+   the built-in **One-time PIN** login method (Cloudflare emails you a code -
+   no extra identity provider setup needed). Add more emails or connect an
+   identity provider (Google, GitHub, etc.) if others need access.
+6. Save. Visiting `https://pa.yourdomain.com` now redirects to a Cloudflare
+   login page before reaching the Railway-hosted frontend.
+
+Because the SPA's `/api/*` calls are same-origin (proxied through the
+frontend's nginx to the backend), they're covered by the same Access session
+cookie - no separate API configuration is needed. If you ever need
+programmatic (non-browser) access to the API, issue a
+[service token](https://developers.cloudflare.com/cloudflare-one/identity/service-tokens/)
+instead of disabling Access.
+
 ## Local AI fallback (Ollama)
 
 The `ollama` service in `docker-compose.yml` lets you run the entire stack
