@@ -89,6 +89,14 @@
   padding: 12px;
 }
 
+.detail-markdown {
+  white-space: normal;
+}
+
+.view-toggle {
+  align-self: flex-start;
+}
+
 .form-row {
   display: flex;
   gap: 16px;

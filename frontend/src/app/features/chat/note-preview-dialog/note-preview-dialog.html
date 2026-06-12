@@ -26,7 +26,11 @@
       </mat-chip-set>
     }
 
-    <pre class="preview-note-content" [class.preview-note-content-code]="note()!.content_type === 'code'">{{ note()!.content }}</pre>
+    @if (note()!.content_type === 'code') {
+      <pre class="preview-note-content preview-note-content-code">{{ note()!.content }}</pre>
+    } @else {
+      <markdown class="preview-note-content preview-note-markdown" [data]="note()!.content"></markdown>
+    }
   } @else {
     <p class="status-text">Note not found.</p>
   }

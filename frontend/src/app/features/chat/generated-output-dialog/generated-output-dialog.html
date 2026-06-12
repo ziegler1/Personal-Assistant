@@ -9,7 +9,7 @@
       <pre class="generated-text">{{ output.content }}</pre>
     }
   } @else {
-    <pre class="generated-text">{{ output.content }}</pre>
+    <markdown class="generated-markdown" [data]="output.content"></markdown>
   }
 </mat-dialog-content>
 <mat-dialog-actions align="end">

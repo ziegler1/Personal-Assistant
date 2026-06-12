@@ -108,3 +108,21 @@ plan, flagged for review as potential next steps once all phases are done.
     so the Access section is written as a follow-on step that explicitly states
     this prerequisite and points back at the custom domain section above it.
     No code changes were needed for either section, per the plan's note for 8a.
+
+## Phase 5e — Chat Retrieval Improvements
+
+22. **`MAX_SOURCES` raised from 5 to 10** and reused as both the pgvector
+    top-k retrieval limit and the cap on cited sources (same dual role as
+    before) - chat replies can now surface up to 10 source chips instead of 5.
+23. **"List all notes" bypass uses a broad keyword regex**
+    (`/\b(list|all|how many|what do you have)\b/i`) on the query text (after
+    stripping any `search:` prefix). This favors recall over precision per the
+    spec - common words like "all" can false-trigger on unrelated queries
+    (e.g. "tell me about all the planets"), swapping vector-search context for
+    a full title list. Tune the regex if this fires too often.
+24. **Title-list bypass is unbounded and skips web search** - it returns every
+    matching note's title (filtered by `content_type` if set, ordered by
+    `created_at DESC`) with no row limit, and forces `topSimilarity = 1` so the
+    web-search fallback doesn't also fire for "how many notes do you have"
+    style queries. For very large note collections this could produce a large
+    context block; add a cap later if prompt size becomes an issue.

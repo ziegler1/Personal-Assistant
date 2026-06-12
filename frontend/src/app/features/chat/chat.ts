@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog } from '@angular/material/dialog';
+import { MarkdownModule } from 'ngx-markdown';
 import { ChatApi } from '../../core/services/chat';
 import { NotesApi } from '../../core/services/notes';
 import {
@@ -41,6 +42,7 @@ interface DisplayMessage extends ChatMessage {
     MatInputModule,
     MatSelectModule,
     MatMenuModule,
+    MarkdownModule,
   ],
   templateUrl: './chat.html',
   styleUrl: './chat.scss',

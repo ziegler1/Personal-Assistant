@@ -4,6 +4,7 @@ import { DatePipe } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
+import { MarkdownModule } from 'ngx-markdown';
 import { NotesApi } from '../../../core/services/notes';
 import { NoteWithFiles } from '../../../core/models/note.model';
 
@@ -13,7 +14,7 @@ export interface NotePreviewDialogData {
 
 @Component({
   selector: 'app-note-preview-dialog',
-  imports: [DatePipe, MatDialogModule, MatButtonModule, MatChipsModule],
+  imports: [DatePipe, MatDialogModule, MatButtonModule, MatChipsModule, MarkdownModule],
   templateUrl: './note-preview-dialog.html',
   styleUrl: './note-preview-dialog.scss',
 })

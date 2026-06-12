@@ -25,6 +25,11 @@
   overflow-y: auto;
 }
 
+.generated-markdown {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
 .diagram-preview {
   display: flex;
   justify-content: center;

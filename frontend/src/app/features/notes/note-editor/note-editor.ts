@@ -9,6 +9,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MarkdownModule } from 'ngx-markdown';
 import { NotesApi } from '../../../core/services/notes';
 import { CONTENT_TYPES, ContentType, Note, NoteFile } from '../../../core/models/note.model';
 
@@ -32,6 +34,8 @@ interface NoteFormSnapshot {
     MatSelectModule,
     MatChipsModule,
     MatAutocompleteModule,
+    MatButtonToggleModule,
+    MarkdownModule,
   ],
   templateUrl: './note-editor.html',
   styleUrl: './note-editor.scss',
@@ -62,6 +66,7 @@ export class NoteEditor implements OnInit {
   protected readonly files = signal<NoteFile[]>([]);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
+  protected readonly showRaw = signal(false);
 
   private snapshot: NoteFormSnapshot | null = null;
 

@@ -55,7 +55,24 @@
         </mat-chip-set>
       }
 
-      <pre class="detail-content" [class.detail-content-code]="contentType() === 'code'">{{ content() }}</pre>
+      @if (contentType() === 'code') {
+        <pre class="detail-content detail-content-code">{{ content() }}</pre>
+      } @else {
+        <mat-button-toggle-group
+          class="view-toggle"
+          [value]="showRaw() ? 'raw' : 'rendered'"
+          (change)="showRaw.set($event.value === 'raw')"
+          aria-label="Content view mode"
+        >
+          <mat-button-toggle value="rendered">Rendered</mat-button-toggle>
+          <mat-button-toggle value="raw">Raw</mat-button-toggle>
+        </mat-button-toggle-group>
+        @if (showRaw()) {
+          <pre class="detail-content">{{ content() }}</pre>
+        } @else {
+          <markdown class="detail-content detail-markdown" [data]="content()"></markdown>
+        }
+      }
 
       @if (files().length > 0) {
         <div class="files-section">

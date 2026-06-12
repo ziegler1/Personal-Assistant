@@ -36,8 +36,9 @@ function toVectorLiteral(embedding: number[]): string {
 
 const SIMILARITY_THRESHOLD = 0.2;
 const WEB_SEARCH_SIMILARITY_THRESHOLD = 0.5;
-const MAX_SOURCES = 5;
+const MAX_SOURCES = 10;
 const SEARCH_PREFIX_RE = /^\s*search:\s*/i;
+const LIST_ALL_RE = /\b(list|all|how many|what do you have)\b/i;
 
 export async function chat(messages: Message[], opts: ChatOptions = {}): Promise<ChatResult> {
   const lastUserIndex = messages.map((m) => m.role).lastIndexOf('user');
@@ -46,6 +47,7 @@ export async function chat(messages: Message[], opts: ChatOptions = {}): Promise
   let sources: { id: string; title: string; content: string }[] = [];
   let webResults: ChatWebResult[] = [];
   let providerMessages = messages;
+  let allTitles: string[] | null = null;
 
   if (lastUser) {
     const forceWebSearch = SEARCH_PREFIX_RE.test(lastUser.content);
@@ -56,28 +58,50 @@ export async function chat(messages: Message[], opts: ChatOptions = {}): Promise
     }
 
     let topSimilarity = 0;
-    try {
-      const embedding = await getEmbeddingProvider().embed(query);
-      const params: unknown[] = [toVectorLiteral(embedding)];
-      let where = 'embedding IS NOT NULL';
-      if (opts.contentType) {
-        params.push(opts.contentType);
-        where += ` AND content_type = $${params.length}`;
-      }
-      params.push(MAX_SOURCES);
 
-      const { rows } = await pool.query<{ id: string; title: string; content: string; similarity: number }>(
-        `SELECT id, title, content, 1 - (embedding <=> $1::vector) AS similarity
-         FROM notes
-         WHERE ${where}
-         ORDER BY embedding <=> $1::vector
-         LIMIT $${params.length}`,
-        params
-      );
-      topSimilarity = rows[0]?.similarity ?? 0;
-      sources = rows.filter((r) => r.similarity > SIMILARITY_THRESHOLD);
-    } catch (err) {
-      console.error('Note retrieval for chat failed:', err);
+    if (!forceWebSearch && LIST_ALL_RE.test(query)) {
+      try {
+        const params: unknown[] = [];
+        let where = '';
+        if (opts.contentType) {
+          params.push(opts.contentType);
+          where = ` WHERE content_type = $${params.length}`;
+        }
+        const { rows } = await pool.query<{ title: string }>(
+          `SELECT title FROM notes${where} ORDER BY created_at DESC`,
+          params
+        );
+        allTitles = rows.map((r) => r.title);
+        topSimilarity = 1;
+      } catch (err) {
+        console.error('Note title listing for chat failed:', err);
+      }
+    }
+
+    if (allTitles === null) {
+      try {
+        const embedding = await getEmbeddingProvider().embed(query);
+        const params: unknown[] = [toVectorLiteral(embedding)];
+        let where = 'embedding IS NOT NULL';
+        if (opts.contentType) {
+          params.push(opts.contentType);
+          where += ` AND content_type = $${params.length}`;
+        }
+        params.push(MAX_SOURCES);
+
+        const { rows } = await pool.query<{ id: string; title: string; content: string; similarity: number }>(
+          `SELECT id, title, content, 1 - (embedding <=> $1::vector) AS similarity
+           FROM notes
+           WHERE ${where}
+           ORDER BY embedding <=> $1::vector
+           LIMIT $${params.length}`,
+          params
+        );
+        topSimilarity = rows[0]?.similarity ?? 0;
+        sources = rows.filter((r) => r.similarity > SIMILARITY_THRESHOLD);
+      } catch (err) {
+        console.error('Note retrieval for chat failed:', err);
+      }
     }
 
     if (query && (forceWebSearch || topSimilarity < WEB_SEARCH_SIMILARITY_THRESHOLD)) {
@@ -90,6 +114,9 @@ export async function chat(messages: Message[], opts: ChatOptions = {}): Promise
   }
 
   const context = [
+    ...(allTitles
+      ? [`### All your notes (${allTitles.length})\n${allTitles.map((t) => `- ${t}`).join('\n')}`]
+      : []),
     ...sources.map((s) => `### ${s.title}\n${s.content}`),
     ...webResults.map((r) => `### ${r.title} (${r.url})\n${r.content}`),
   ];

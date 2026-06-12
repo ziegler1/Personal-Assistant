@@ -3,6 +3,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MarkdownModule } from 'ngx-markdown';
 import { NotesApi } from '../../../core/services/notes';
 import { ExportApi } from '../../../core/services/export';
 import { ContentType, GenerateFormat, GeneratedOutput } from '../../../core/models/note.model';
@@ -27,7 +28,7 @@ const CONTENT_TYPE_BY_FORMAT: Record<GenerateFormat, ContentType> = {
 
 @Component({
   selector: 'app-generated-output-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule],
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, MarkdownModule],
   templateUrl: './generated-output-dialog.html',
   styleUrl: './generated-output-dialog.scss',
 })
