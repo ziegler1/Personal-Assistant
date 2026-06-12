@@ -21,6 +21,23 @@
   min-width: 240px;
 }
 
+.relevance-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.relevance-label {
+  color: var(--app-text-muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.relevance-slider {
+  flex: 1;
+  max-width: 320px;
+}
+
 .status-text {
   color: var(--app-text-muted);
 }

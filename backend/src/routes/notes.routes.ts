@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as notesService from '../services/notesService';
+import { config } from '../config';
 import { ContentType } from '../types/models';
 
 const router = Router();
@@ -15,7 +16,13 @@ router.get('/search', async (req, res, next) => {
       return res.json({ results });
     }
 
-    const results = await notesService.searchNotes(q, { tag, contentType });
+    let minScore = config.searchMinScore;
+    if (req.query.minScore !== undefined) {
+      const parsed = Number(req.query.minScore);
+      if (!Number.isNaN(parsed)) minScore = Math.min(1, Math.max(0, parsed));
+    }
+
+    const results = await notesService.searchNotes(q, { tag, contentType, minScore });
     res.json({ results });
   } catch (err) {
     next(err);

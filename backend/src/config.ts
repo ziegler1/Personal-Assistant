@@ -17,6 +17,7 @@ export const config = {
   port: Number(process.env.PORT) || 3000,
   databaseUrl: process.env.DATABASE_URL || '',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:4200',
+  searchMinScore: Number(process.env.SEARCH_MIN_SCORE) || 0.5,
 
   aiProvider,
   embeddingDimensions: EMBEDDING_DIMENSIONS[aiProvider],

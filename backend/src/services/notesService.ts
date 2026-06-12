@@ -27,6 +27,7 @@ export interface ListNotesFilter {
 
 export interface SearchNotesOptions extends ListNotesFilter {
   limit?: number;
+  minScore?: number;
 }
 
 function toVectorLiteral(embedding: number[]): string {
@@ -182,5 +183,7 @@ export async function searchNotes(query: string, opts: SearchNotesOptions = {}):
   `;
 
   const { rows } = await pool.query<SearchResult>(sql, params);
-  return rows;
+
+  const minScore = opts.minScore ?? 0;
+  return rows.filter((r) => r.score >= minScore);
 }

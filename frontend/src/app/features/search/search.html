@@ -18,6 +18,13 @@
     </button>
   </div>
 
+  <div class="relevance-control">
+    <span class="relevance-label">Min relevance: {{ minRelevance() }}%</span>
+    <mat-slider class="relevance-slider" min="0" max="100" step="1" discrete>
+      <input matSliderThumb [ngModel]="minRelevance()" (ngModelChange)="setMinRelevance($event)" />
+    </mat-slider>
+  </div>
+
   @if (loading()) {
     <p class="status-text">Searching…</p>
   } @else if (searched() && results().length === 0) {

@@ -7,8 +7,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatSliderModule } from '@angular/material/slider';
 import { NotesApi } from '../../core/services/notes';
 import { SearchResult } from '../../core/models/note.model';
+
+const MIN_RELEVANCE_STORAGE_KEY = 'search.minRelevance';
 
 @Component({
   selector: 'app-search',
@@ -20,6 +23,7 @@ import { SearchResult } from '../../core/models/note.model';
     MatFormFieldModule,
     MatInputModule,
     MatChipsModule,
+    MatSliderModule,
   ],
   templateUrl: './search.html',
   styleUrl: './search.scss',
@@ -33,6 +37,7 @@ export class Search implements OnInit {
   protected readonly results = signal<SearchResult[]>([]);
   protected readonly loading = signal(false);
   protected readonly searched = signal(false);
+  protected readonly minRelevance = signal(loadMinRelevance());
 
   ngOnInit(): void {
     const q = this.route.snapshot.queryParamMap.get('q');
@@ -42,13 +47,18 @@ export class Search implements OnInit {
     }
   }
 
+  setMinRelevance(value: number): void {
+    this.minRelevance.set(value);
+    localStorage.setItem(MIN_RELEVANCE_STORAGE_KEY, String(value));
+  }
+
   search(): void {
     const q = this.query().trim();
     if (!q) return;
 
     this.loading.set(true);
     this.searched.set(true);
-    this.notesApi.search(q).subscribe({
+    this.notesApi.search(q, {}, this.minRelevance() / 100).subscribe({
       next: (res) => {
         this.results.set(res.results);
         this.loading.set(false);
@@ -63,4 +73,11 @@ export class Search implements OnInit {
   openNote(id: string): void {
     this.router.navigate(['/notes', id]);
   }
+}
+
+function loadMinRelevance(): number {
+  const stored = localStorage.getItem(MIN_RELEVANCE_STORAGE_KEY);
+  if (stored === null) return 50;
+  const value = Number(stored);
+  return Number.isFinite(value) && value >= 0 && value <= 100 ? value : 50;
 }

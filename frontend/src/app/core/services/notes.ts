@@ -27,8 +27,9 @@ export class NotesApi {
     return this.http.get<{ notes: Note[] }>(this.base, { params: this.buildParams(filters) });
   }
 
-  search(query: string, filters: NoteFilters = {}): Observable<{ results: SearchResult[] }> {
-    const params = this.buildParams(filters).set('q', query);
+  search(query: string, filters: NoteFilters = {}, minScore?: number): Observable<{ results: SearchResult[] }> {
+    let params = this.buildParams(filters).set('q', query);
+    if (minScore !== undefined) params = params.set('minScore', minScore);
     return this.http.get<{ results: SearchResult[] }>(`${this.base}/search`, { params });
   }
 
