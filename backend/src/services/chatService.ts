@@ -1,5 +1,6 @@
 import { pool } from '../db/pool';
 import { getChatProvider, getEmbeddingProvider, getWebSearchProvider, Message } from '../ai';
+import { config } from '../config';
 import { ContentType } from '../types/models';
 import { NO_TEXT_EXTRACTED_PREFIX } from './ingestionService';
 
@@ -163,6 +164,11 @@ export async function saveMessage(
       sources && sources.length ? JSON.stringify(sources) : null,
       webResults && webResults.length ? JSON.stringify(webResults) : null,
     ]
+  );
+
+  await pool.query(
+    `DELETE FROM chat_messages WHERE id NOT IN (SELECT id FROM chat_messages ORDER BY created_at DESC LIMIT $1)`,
+    [config.chatHistoryLimit]
   );
 }
 

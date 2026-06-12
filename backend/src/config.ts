@@ -18,6 +18,7 @@ export const config = {
   databaseUrl: process.env.DATABASE_URL || '',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:4200',
   searchMinScore: Number(process.env.SEARCH_MIN_SCORE) || 0.5,
+  chatHistoryLimit: Number(process.env.CHAT_HISTORY_LIMIT) || 50,
 
   aiProvider,
   embeddingDimensions: EMBEDDING_DIMENSIONS[aiProvider],
