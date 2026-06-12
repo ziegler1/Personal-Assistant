@@ -1,6 +1,7 @@
 import { pool } from '../db/pool';
 import { getChatProvider, getEmbeddingProvider, getWebSearchProvider, Message } from '../ai';
 import { ContentType } from '../types/models';
+import { NO_TEXT_EXTRACTED_PREFIX } from './ingestionService';
 
 export interface ChatSource {
   id: string;
@@ -45,7 +46,8 @@ export async function chat(messages: Message[], opts: ChatOptions = {}): Promise
   const lastUserIndex = messages.map((m) => m.role).lastIndexOf('user');
   const lastUser = lastUserIndex >= 0 ? messages[lastUserIndex] : undefined;
 
-  let sources: { id: string; title: string; content: string }[] = [];
+  let sources: { id: string; title: string; content: string; content_type: ContentType; filename: string | null }[] =
+    [];
   let webResults: ChatWebResult[] = [];
   let providerMessages = messages;
   let allTitles: string[] | null = null;
@@ -83,18 +85,30 @@ export async function chat(messages: Message[], opts: ChatOptions = {}): Promise
       try {
         const embedding = await getEmbeddingProvider().embed(query);
         const params: unknown[] = [toVectorLiteral(embedding)];
-        let where = 'embedding IS NOT NULL';
+        let where = 'n.embedding IS NOT NULL';
         if (opts.contentType) {
           params.push(opts.contentType);
-          where += ` AND content_type = $${params.length}`;
+          where += ` AND n.content_type = $${params.length}`;
         }
+        params.push(`${NO_TEXT_EXTRACTED_PREFIX}%`);
+        const stubParam = params.length;
         params.push(MAX_SOURCES);
 
-        const { rows } = await pool.query<{ id: string; title: string; content: string; similarity: number }>(
-          `SELECT id, title, content, 1 - (embedding <=> $1::vector) AS similarity
-           FROM notes
+        const { rows } = await pool.query<{
+          id: string;
+          title: string;
+          content: string;
+          content_type: ContentType;
+          filename: string | null;
+          similarity: number;
+        }>(
+          `SELECT n.id, n.title, n.content, n.content_type,
+                  (SELECT f.filename FROM files f WHERE f.note_id = n.id LIMIT 1) AS filename,
+                  1 - (n.embedding <=> $1::vector) AS similarity
+           FROM notes n
            WHERE ${where}
-           ORDER BY embedding <=> $1::vector
+           ORDER BY (n.content_type = 'file' AND n.content LIKE $${stubParam}) ASC,
+                    n.embedding <=> $1::vector
            LIMIT $${params.length}`,
           params
         );
@@ -118,7 +132,12 @@ export async function chat(messages: Message[], opts: ChatOptions = {}): Promise
     ...(allTitles
       ? [`### All your notes (${allTitles.length})\n${allTitles.map((t) => `- ${t}`).join('\n')}`]
       : []),
-    ...sources.map((s) => `### ${s.title}\n${s.content}`),
+    ...sources.map((s) => {
+      if (s.content_type === 'file' && s.content.startsWith(NO_TEXT_EXTRACTED_PREFIX)) {
+        return `### ${s.title}\n[File: ${s.filename ?? s.title} — no extractable text]`;
+      }
+      return `### ${s.title}\n${s.content}`;
+    }),
     ...webResults.map((r) => `### ${r.title} (${r.url})\n${r.content}`),
   ];
   const reply = await getChatProvider().chat(providerMessages, context);

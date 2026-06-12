@@ -36,10 +36,12 @@ export function noteTitleFromFilename(filename: string): string {
   return dot > 0 ? filename.slice(0, dot) : filename;
 }
 
+export const NO_TEXT_EXTRACTED_PREFIX = 'No text could be extracted';
+
 export async function createNoteFromFileText(filename: string, text: string): Promise<Note> {
   return createNote({
     title: noteTitleFromFilename(filename),
-    content: text,
+    content: text || `${NO_TEXT_EXTRACTED_PREFIX} from "${filename}".`,
     content_type: 'file',
     tags: [],
   });
