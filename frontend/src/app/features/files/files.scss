@@ -127,6 +127,14 @@
   flex-shrink: 0;
 }
 
+.extraction-warning {
+  color: #f59e0b;
+  flex-shrink: 0;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
 .file-name {
   font-weight: 500;
   overflow: hidden;

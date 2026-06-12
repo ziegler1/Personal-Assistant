@@ -5,6 +5,7 @@ import multer from 'multer';
 import { pool } from '../db/pool';
 import * as r2 from '../services/r2Service';
 import * as ingestion from '../services/ingestionService';
+import { ExtractionStatus } from '../types/models';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
@@ -31,7 +32,7 @@ const router = Router();
 router.get('/', async (_req, res, next) => {
   try {
     const { rows } = await pool.query(
-      `SELECT f.id, f.note_id, f.r2_key, f.filename, f.mime_type, f.size_bytes, f.created_at,
+      `SELECT f.id, f.note_id, f.r2_key, f.filename, f.mime_type, f.size_bytes, f.extraction_status, f.created_at,
               n.title AS note_title
        FROM files f
        LEFT JOIN notes n ON n.id = f.note_id
@@ -57,7 +58,7 @@ router.post('/upload', upload.single('file'), async (req, res, next) => {
     const { rows } = await pool.query(
       `INSERT INTO files (note_id, r2_key, filename, mime_type, size_bytes)
        VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, note_id, r2_key, filename, mime_type, size_bytes, created_at`,
+       RETURNING id, note_id, r2_key, filename, mime_type, size_bytes, extraction_status, created_at`,
       [noteId, key, req.file.originalname, req.file.mimetype, req.file.size]
     );
 
@@ -65,18 +66,24 @@ router.post('/upload', upload.single('file'), async (req, res, next) => {
     let noteTitle: string | undefined;
 
     if (!noteId) {
-      let extractedText: string | undefined;
+      let extractedText: string | null | undefined;
       if (req.file.mimetype === 'application/pdf') {
         extractedText = await ingestion.extractPdfText(req.file.buffer);
       } else if (req.file.mimetype.startsWith('image/')) {
-        const ocrText = await ingestion.extractImageText(req.file.buffer);
-        if (ocrText) extractedText = ocrText;
+        extractedText = await ingestion.extractImageText(req.file.buffer);
       }
 
       if (extractedText !== undefined) {
-        const note = await ingestion.createNoteFromFileText(req.file.originalname, extractedText);
-        await pool.query('UPDATE files SET note_id = $1 WHERE id = $2', [note.id, file.id]);
+        const extractionStatus: ExtractionStatus =
+          extractedText === null ? 'error' : extractedText.length > 0 ? 'success' : 'empty';
+        const note = await ingestion.createNoteFromFileText(req.file.originalname, extractedText ?? '');
+        await pool.query('UPDATE files SET note_id = $1, extraction_status = $2 WHERE id = $3', [
+          note.id,
+          extractionStatus,
+          file.id,
+        ]);
         file.note_id = note.id;
+        file.extraction_status = extractionStatus;
         noteTitle = note.title;
       }
     }

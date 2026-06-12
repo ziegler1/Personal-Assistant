@@ -1,5 +1,7 @@
 export type ContentType = 'text' | 'code' | 'chat' | 'file' | 'link';
 
+export type ExtractionStatus = 'success' | 'empty' | 'error';
+
 export interface Note {
   id: string;
   title: string;
@@ -29,5 +31,6 @@ export interface FileRecord {
   filename: string;
   mime_type: string | null;
   size_bytes: number | null;
+  extraction_status: ExtractionStatus | null;
   created_at: string;
 }

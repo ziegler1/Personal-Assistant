@@ -3,20 +3,20 @@ import { createWorker } from 'tesseract.js';
 import { createNote } from './notesService';
 import { Note } from '../types/models';
 
-export async function extractPdfText(buffer: Buffer): Promise<string> {
+export async function extractPdfText(buffer: Buffer): Promise<string | null> {
   const parser = new PDFParse({ data: buffer });
   try {
     const result = await parser.getText();
     return result.text.trim();
   } catch (err) {
     console.error('PDF text extraction failed:', err);
-    return '';
+    return null;
   } finally {
     await parser.destroy();
   }
 }
 
-export async function extractImageText(buffer: Buffer): Promise<string> {
+export async function extractImageText(buffer: Buffer): Promise<string | null> {
   try {
     const worker = await createWorker('eng');
     try {
@@ -27,7 +27,7 @@ export async function extractImageText(buffer: Buffer): Promise<string> {
     }
   } catch (err) {
     console.error('Image OCR failed:', err);
-    return '';
+    return null;
   }
 }
 

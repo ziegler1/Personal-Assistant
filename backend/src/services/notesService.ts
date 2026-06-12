@@ -94,7 +94,7 @@ export async function getNoteById(id: string): Promise<NoteWithFiles | null> {
   if (!rows.length) return null;
 
   const { rows: files } = await pool.query<FileRecord>(
-    `SELECT id, note_id, r2_key, filename, mime_type, size_bytes, created_at
+    `SELECT id, note_id, r2_key, filename, mime_type, size_bytes, extraction_status, created_at
      FROM files WHERE note_id = $1 ORDER BY created_at DESC`,
     [id]
   );

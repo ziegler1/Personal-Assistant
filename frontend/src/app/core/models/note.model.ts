@@ -2,6 +2,8 @@ export type ContentType = 'text' | 'code' | 'chat' | 'file' | 'link';
 
 export const CONTENT_TYPES: ContentType[] = ['text', 'code', 'chat', 'file', 'link'];
 
+export type ExtractionStatus = 'success' | 'empty' | 'error';
+
 export interface Note {
   id: string;
   title: string;
@@ -20,6 +22,7 @@ export interface NoteFile {
   filename: string;
   mime_type: string | null;
   size_bytes: number | null;
+  extraction_status: ExtractionStatus | null;
   created_at: string;
   note_title?: string;
 }

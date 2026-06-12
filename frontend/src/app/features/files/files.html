@@ -62,6 +62,11 @@
         <div class="file-row">
           <mat-icon class="file-icon">{{ fileIcon(file.mime_type) }}</mat-icon>
           <span class="file-name">{{ file.filename }}</span>
+          @if (file.extraction_status === 'empty') {
+            <mat-icon class="extraction-warning" title="No searchable text could be extracted from this file"
+              >warning</mat-icon
+            >
+          }
           @if (file.note_title && file.note_id) {
             <button class="link-button" (click)="openNote(file.note_id)">{{ file.note_title }}</button>
           }
