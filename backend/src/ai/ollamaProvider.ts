@@ -37,4 +37,23 @@ export class OllamaProvider implements AIProvider {
     const data = (await response.json()) as { message: { content: string } };
     return data.message.content;
   }
+
+  async generate(prompt: string): Promise<string> {
+    const response = await fetch(`${config.ollamaBaseUrl}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: config.ollamaChatModel,
+        messages: [{ role: 'user', content: prompt }],
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ollama chat request failed (${response.status}): ${await response.text()}`);
+    }
+
+    const data = (await response.json()) as { message: { content: string } };
+    return data.message.content;
+  }
 }

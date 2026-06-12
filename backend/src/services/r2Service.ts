@@ -31,13 +31,13 @@ export async function deleteFile(key: string): Promise<void> {
   );
 }
 
-export async function getDownloadUrl(key: string): Promise<string> {
+export async function getDownloadUrl(key: string, expiresIn = 3600): Promise<string> {
   return getSignedUrl(
     client,
     new GetObjectCommand({
       Bucket: config.r2.bucketName,
       Key: key,
     }),
-    { expiresIn: 3600 }
+    { expiresIn }
   );
 }

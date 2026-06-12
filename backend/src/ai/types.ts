@@ -8,6 +8,7 @@ export interface Message {
 export interface AIProvider {
   embed(text: string): Promise<number[]>;
   chat(messages: Message[], context: string[]): Promise<string>;
+  generate(prompt: string): Promise<string>;
 }
 
 export interface WebSearchResult {

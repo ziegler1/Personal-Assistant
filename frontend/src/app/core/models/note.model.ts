@@ -63,3 +63,18 @@ export interface ChatHistoryMessage {
   sources: ChatSource[] | null;
   web_results: ChatWebResult[] | null;
 }
+
+export type GenerateFormat = 'note-card' | 'workflow-diagram' | 'markdown-doc' | 'checklist';
+
+export const GENERATE_FORMATS: { value: GenerateFormat; label: string }[] = [
+  { value: 'note-card', label: 'Note card' },
+  { value: 'workflow-diagram', label: 'Workflow diagram' },
+  { value: 'markdown-doc', label: 'Markdown doc' },
+  { value: 'checklist', label: 'Checklist' },
+];
+
+export interface GeneratedOutput {
+  format: GenerateFormat;
+  title: string;
+  content: string;
+}

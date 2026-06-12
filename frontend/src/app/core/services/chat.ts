@@ -1,7 +1,14 @@
 import { Service, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ChatHistoryMessage, ChatMessage, ChatResponse, ContentType } from '../models/note.model';
+import {
+  ChatHistoryMessage,
+  ChatMessage,
+  ChatResponse,
+  ContentType,
+  GenerateFormat,
+  GeneratedOutput,
+} from '../models/note.model';
 
 @Service()
 export class ChatApi {
@@ -13,5 +20,9 @@ export class ChatApi {
 
   history(): Observable<{ messages: ChatHistoryMessage[] }> {
     return this.http.get<{ messages: ChatHistoryMessage[] }>('/api/chat/history');
+  }
+
+  generate(content: string, format: GenerateFormat): Observable<GeneratedOutput> {
+    return this.http.post<GeneratedOutput>('/api/chat/generate', { content, format });
   }
 }

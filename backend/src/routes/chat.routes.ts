@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import * as chatService from '../services/chatService';
+import * as generateService from '../services/generateService';
+import { GENERATE_FORMATS, GenerateFormat } from '../services/generateService';
 import { Message } from '../ai';
 import { ContentType } from '../types/models';
 
@@ -31,6 +33,24 @@ router.post('/', async (req, res, next) => {
 
     await chatService.saveMessage('assistant', result.reply, result.sources, result.webResults);
 
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/generate', async (req, res, next) => {
+  try {
+    const content = req.body?.content as string | undefined;
+    const format = req.body?.format as GenerateFormat | undefined;
+
+    if (!content || !format || !GENERATE_FORMATS.includes(format)) {
+      return res.status(400).json({
+        error: `Request body must include "content" (string) and "format" (one of: ${GENERATE_FORMATS.join(', ')})`,
+      });
+    }
+
+    const result = await generateService.generate(format, content);
     res.json(result);
   } catch (err) {
     next(err);

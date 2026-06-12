@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>{{ output.title }}</h2>
+<mat-dialog-content class="generated-content">
+  @if (isDiagram) {
+    @if (loadingDiagram()) {
+      <p class="status-text">Rendering diagram…</p>
+    } @else if (diagramSvg()) {
+      <div class="diagram-preview" [innerHTML]="diagramSvg()"></div>
+    } @else {
+      <pre class="generated-text">{{ output.content }}</pre>
+    }
+  } @else {
+    <pre class="generated-text">{{ output.content }}</pre>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  @if (status()) {
+    <span class="status-text">{{ status() }}</span>
+  }
+  <button mat-stroked-button (click)="downloadPdf()" [disabled]="actionsDisabled()">
+    <mat-icon>picture_as_pdf</mat-icon>
+    PDF
+  </button>
+  @if (supportsPng) {
+    <button mat-stroked-button (click)="downloadPng()" [disabled]="actionsDisabled()">
+      <mat-icon>image</mat-icon>
+      PNG
+    </button>
+  }
+  <button mat-stroked-button (click)="saveAsNote()" [disabled]="busy() || saved()">
+    <mat-icon>{{ saved() ? 'check' : 'bookmark_add' }}</mat-icon>
+    {{ saved() ? 'Saved' : 'Save as note' }}
+  </button>
+  <button mat-stroked-button (click)="copyShareLink()" [disabled]="actionsDisabled()">
+    <mat-icon>link</mat-icon>
+    Share link
+  </button>
+  <button mat-stroked-button (click)="emailToSelf()" [disabled]="actionsDisabled()">
+    <mat-icon>email</mat-icon>
+    Email to self
+  </button>
+  <button mat-button (click)="close()">Close</button>
+</mat-dialog-actions>

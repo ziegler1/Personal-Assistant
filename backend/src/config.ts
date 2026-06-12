@@ -43,4 +43,13 @@ export const config = {
     bucketName: process.env.R2_BUCKET_NAME || '',
     endpoint: process.env.R2_ENDPOINT || '',
   },
+
+  smtp: {
+    host: process.env.SMTP_HOST || '',
+    port: Number(process.env.SMTP_PORT) || 587,
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+    from: process.env.SMTP_FROM || '',
+  },
+  notifyEmail: process.env.NOTIFY_EMAIL || '',
 };

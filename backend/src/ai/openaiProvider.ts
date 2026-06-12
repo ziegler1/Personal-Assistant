@@ -29,4 +29,13 @@ export class OpenAIProvider implements AIProvider {
 
     return response.choices[0]?.message?.content ?? '';
   }
+
+  async generate(prompt: string): Promise<string> {
+    const response = await this.client.chat.completions.create({
+      model: config.openaiChatModel,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    return response.choices[0]?.message?.content ?? '';
+  }
 }

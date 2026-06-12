@@ -143,6 +143,21 @@
   }
 }
 
+.generate-bar {
+  align-self: flex-start;
+}
+
+.generate-button {
+  font-size: 0.8rem;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+  }
+}
+
 .chat-input {
   display: flex;
   gap: 12px;

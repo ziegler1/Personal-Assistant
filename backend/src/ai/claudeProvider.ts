@@ -33,4 +33,17 @@ export class ClaudeProvider implements AIProvider {
       .map((block) => block.text)
       .join('\n');
   }
+
+  async generate(prompt: string): Promise<string> {
+    const response = await this.client.messages.create({
+      model: config.claudeChatModel,
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    return response.content
+      .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+      .map((block) => block.text)
+      .join('\n');
+  }
 }

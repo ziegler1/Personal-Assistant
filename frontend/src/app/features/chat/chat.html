@@ -50,6 +50,24 @@
               }
             </div>
           }
+          @if (message.role === 'assistant') {
+            <div class="generate-bar">
+              <button
+                mat-stroked-button
+                class="generate-button"
+                [matMenuTriggerFor]="generateMenu"
+                [disabled]="message.generating"
+              >
+                <mat-icon>auto_awesome</mat-icon>
+                {{ message.generating ? 'Generating…' : 'Generate' }}
+              </button>
+              <mat-menu #generateMenu="matMenu">
+                @for (format of generateFormats; track format.value) {
+                  <button mat-menu-item (click)="generate(message, format.value)">{{ format.label }}</button>
+                }
+              </mat-menu>
+            </div>
+          }
         </div>
       </div>
     }

@@ -29,4 +29,10 @@ export class CohereProvider implements AIProvider {
       'CohereProvider does not support chat. AI_PROVIDER=claude pairs CohereProvider (embeddings) with ClaudeProvider (chat).'
     );
   }
+
+  async generate(_prompt: string): Promise<string> {
+    throw new Error(
+      'CohereProvider does not support generation. AI_PROVIDER=claude pairs CohereProvider (embeddings) with ClaudeProvider (chat).'
+    );
+  }
 }
