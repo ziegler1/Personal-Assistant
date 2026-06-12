@@ -80,10 +80,12 @@ let pdfMakeLoader: Promise<typeof import('pdfmake/build/pdfmake')> | undefined;
 async function loadPdfMake(): Promise<typeof import('pdfmake/build/pdfmake')> {
   if (!pdfMakeLoader) {
     pdfMakeLoader = (async () => {
-      const [pdfMake, vfsModule] = await Promise.all([
+      const [pdfMakeModule, vfsModule] = await Promise.all([
         import('pdfmake/build/pdfmake'),
         import('pdfmake/build/vfs_fonts'),
       ]);
+      const pdfMake =
+        (pdfMakeModule as unknown as { default?: typeof pdfMakeModule }).default ?? pdfMakeModule;
       const vfs = (vfsModule as unknown as { default?: object }).default ?? vfsModule;
       pdfMake.addVirtualFileSystem(vfs as Parameters<typeof pdfMake.addVirtualFileSystem>[0]);
       return pdfMake;
