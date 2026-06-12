@@ -1,61 +1,68 @@
 <div class="notes-page">
-  <div class="page-header">
-    <h1>Notes</h1>
-    <button mat-flat-button color="primary" (click)="newNote()">
-      <mat-icon>add</mat-icon>
-      New Note
-    </button>
-  </div>
-
-  <div class="type-filter-row">
-    @for (type of contentTypes; track type) {
-      <button
-        class="filter-chip"
-        [class.active]="filterState.contentType() === type"
-        (click)="selectType(type)"
-      >
-        {{ type === '' ? 'All' : type }}
+  <app-pull-to-refresh [refreshing]="loading()" (refresh)="load()">
+    <div class="page-header">
+      <h1>Notes</h1>
+      <button mat-flat-button color="primary" (click)="newNote()">
+        <mat-icon>add</mat-icon>
+        New Note
       </button>
-    }
-  </div>
+    </div>
 
-  <mat-form-field appearance="outline" class="tag-filter-field">
-    <mat-label>Filter by tag</mat-label>
-    <input
-      matInput
-      [ngModel]="filterState.tag()"
-      (ngModelChange)="onTagInput($event)"
-      placeholder="Start typing to filter…"
-    />
-    @if (filterState.tag()) {
-      <button matSuffix mat-icon-button (click)="onTagInput('')" aria-label="Clear tag filter">
-        <mat-icon>close</mat-icon>
-      </button>
-    }
-  </mat-form-field>
-
-  @if (loading()) {
-    <p class="status-text">Loading notes…</p>
-  } @else if (notes().length === 0) {
-    @if (hasActiveFilters()) {
-      <div class="empty-state">
-        <mat-icon class="empty-icon">search_off</mat-icon>
-        <p>No notes match these filters</p>
-      </div>
-    } @else {
-      <div class="empty-state">
-        <mat-icon class="empty-icon">description</mat-icon>
-        <p>No notes yet — tap + to add your first</p>
-        <button mat-fab color="primary" (click)="newNote()" aria-label="New note">
-          <mat-icon>add</mat-icon>
+    <div class="type-filter-row">
+      @for (type of contentTypes; track type) {
+        <button
+          class="filter-chip"
+          [class.active]="filterState.contentType() === type"
+          (click)="selectType(type)"
+        >
+          {{ type === '' ? 'All' : type }}
         </button>
-      </div>
-    }
-  } @else {
-    <div class="notes-list">
-      @for (note of notes(); track note.id) {
-        <app-note-row [note]="note" (open)="openNote(note.id)" (delete)="deleteNote(note.id)" />
       }
     </div>
-  }
+
+    <mat-form-field appearance="outline" class="tag-filter-field">
+      <mat-label>Filter by tag</mat-label>
+      <input
+        matInput
+        [ngModel]="filterState.tag()"
+        (ngModelChange)="onTagInput($event)"
+        placeholder="Start typing to filter…"
+      />
+      @if (filterState.tag()) {
+        <button matSuffix mat-icon-button (click)="onTagInput('')" aria-label="Clear tag filter">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+
+    @if (loading()) {
+      <app-skeleton-list [rows]="5" />
+    } @else if (notes().length === 0) {
+      @if (hasActiveFilters()) {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">search_off</mat-icon>
+          <p>No notes match these filters</p>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">description</mat-icon>
+          <p>No notes yet — tap + to add your first</p>
+          <button mat-fab color="primary" (click)="newNote()" aria-label="New note">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      }
+    } @else {
+      <div class="notes-list">
+        @for (note of notes(); track note.id) {
+          <app-note-row
+            [note]="note"
+            (open)="openNote(note.id)"
+            (delete)="deleteNote(note.id)"
+            (longPress)="openActionSheet(note)"
+          />
+        }
+      </div>
+    }
+  </app-pull-to-refresh>
 </div>

@@ -1,0 +1,48 @@
+.action-sheet {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+}
+
+.action-sheet-title {
+  margin: 4px 16px 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--app-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: none;
+  background: none;
+  color: var(--app-text-primary);
+  font: inherit;
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--app-transition);
+
+  &:active {
+    background: var(--app-surface-2);
+  }
+
+  mat-icon {
+    color: var(--app-text-secondary);
+  }
+}
+
+.action-item-danger {
+  color: var(--app-danger);
+
+  mat-icon {
+    color: var(--app-danger);
+  }
+}

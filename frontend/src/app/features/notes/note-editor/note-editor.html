@@ -7,7 +7,7 @@
         <mat-icon>arrow_back</mat-icon>
       </button>
       <div class="header-actions">
-        <button mat-icon-button class="danger-icon-btn" (click)="delete()" aria-label="Delete note">
+        <button mat-icon-button class="danger-icon-btn" appHaptic (click)="delete()" aria-label="Delete note">
           <mat-icon>delete</mat-icon>
         </button>
         <button mat-flat-button color="primary" (click)="edit()">
@@ -79,11 +79,11 @@
       <button mat-button (click)="cancel()">Cancel</button>
       <div class="header-actions">
         @if (!isNew) {
-          <button mat-icon-button class="danger-icon-btn" (click)="delete()" aria-label="Delete note">
+          <button mat-icon-button class="danger-icon-btn" appHaptic (click)="delete()" aria-label="Delete note">
             <mat-icon>delete</mat-icon>
           </button>
         }
-        <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || !title().trim()">
+        <button mat-flat-button color="primary" appHaptic (click)="save()" [disabled]="saving() || !title().trim()">
           <mat-icon>save</mat-icon>
           Save
         </button>

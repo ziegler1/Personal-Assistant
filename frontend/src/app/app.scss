@@ -26,6 +26,14 @@
     display: block;
     animation: route-fade-in 200ms ease-out;
   }
+
+  &.nav-forward router-outlet + * {
+    animation: route-slide-in-right 200ms ease-out;
+  }
+
+  &.nav-back router-outlet + * {
+    animation: route-slide-in-left 200ms ease-out;
+  }
 }
 
 @keyframes route-fade-in {
@@ -36,6 +44,28 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes route-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes route-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 

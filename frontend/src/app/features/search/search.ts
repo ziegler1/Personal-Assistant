@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
 import { NotesApi } from '../../core/services/notes';
 import { SearchResult } from '../../core/models/note.model';
+import { SkeletonList } from '../../shared/skeleton-list/skeleton-list';
 
 const MIN_RELEVANCE_STORAGE_KEY = 'search.minRelevance';
 const RECENT_SEARCHES_STORAGE_KEY = 'search.recent';
@@ -15,7 +16,7 @@ const MAX_RECENT_SEARCHES = 5;
 
 @Component({
   selector: 'app-search',
-  imports: [FormsModule, DecimalPipe, MatButtonModule, MatIconModule, MatSliderModule],
+  imports: [FormsModule, DecimalPipe, MatButtonModule, MatIconModule, MatSliderModule, SkeletonList],
   templateUrl: './search.html',
   styleUrl: './search.scss',
 })

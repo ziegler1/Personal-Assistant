@@ -1,0 +1,29 @@
+:host {
+  display: contents;
+}
+
+.ptr-content {
+  display: contents;
+}
+
+.ptr-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: height var(--app-transition);
+}
+
+.ptr-icon {
+  color: var(--app-accent);
+
+  &.spinning {
+    animation: ptr-spin 0.8s linear infinite;
+  }
+}
+
+@keyframes ptr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -12,7 +12,9 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { MarkdownModule } from 'ngx-markdown';
 import { NotesApi } from '../../../core/services/notes';
+import { ToastService } from '../../../core/services/toast';
 import { CONTENT_TYPES, ContentType, Note, NoteFile } from '../../../core/models/note.model';
+import { HapticDirective } from '../../../shared/haptic.directive';
 
 interface NoteFormSnapshot {
   title: string;
@@ -36,6 +38,7 @@ interface NoteFormSnapshot {
     MatButtonToggleModule,
     TextFieldModule,
     MarkdownModule,
+    HapticDirective,
   ],
   templateUrl: './note-editor.html',
   styleUrl: './note-editor.scss',
@@ -44,6 +47,7 @@ export class NoteEditor implements OnInit {
   private notesApi = inject(NotesApi);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private toast = inject(ToastService);
 
   protected readonly contentTypes = CONTENT_TYPES;
   protected readonly noteId = signal<string | null>(null);
@@ -93,7 +97,7 @@ export class NoteEditor implements OnInit {
     if (!id) return;
 
     this.noteId.set(id);
-    this.mode.set('view');
+    this.mode.set(this.route.snapshot.queryParamMap.get('edit') ? 'edit' : 'view');
     this.loading.set(true);
     this.notesApi.get(id).subscribe({
       next: (note) => {
@@ -163,16 +167,24 @@ export class NoteEditor implements OnInit {
           this.saving.set(false);
           this.applyNote(note);
           this.mode.set('view');
+          this.toast.success('Note saved');
         },
-        error: () => this.saving.set(false),
+        error: () => {
+          this.saving.set(false);
+          this.toast.error('Failed to save note');
+        },
       });
     } else {
       this.notesApi.create(input).subscribe({
         next: () => {
           this.saving.set(false);
+          this.toast.success('Note saved');
           this.router.navigate(['/notes']);
         },
-        error: () => this.saving.set(false),
+        error: () => {
+          this.saving.set(false);
+          this.toast.error('Failed to save note');
+        },
       });
     }
   }
@@ -180,7 +192,13 @@ export class NoteEditor implements OnInit {
   delete(): void {
     const id = this.noteId();
     if (!id || !confirm('Delete this note? This cannot be undone.')) return;
-    this.notesApi.delete(id).subscribe(() => this.router.navigate(['/notes']));
+    this.notesApi.delete(id).subscribe({
+      next: () => {
+        this.toast.success('Note deleted');
+        this.router.navigate(['/notes']);
+      },
+      error: () => this.toast.error('Failed to delete note'),
+    });
   }
 
   cancel(): void {

@@ -6,8 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { FilesApi } from '../../core/services/files';
+import { ToastService } from '../../core/services/toast';
 import { NoteFile } from '../../core/models/note.model';
 import { FilePreviewDialog } from './file-preview-dialog/file-preview-dialog';
+import { SkeletonList } from '../../shared/skeleton-list/skeleton-list';
+import { PullToRefresh } from '../../shared/pull-to-refresh/pull-to-refresh';
+import { HapticDirective } from '../../shared/haptic.directive';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.txt', '.md', '.json'];
@@ -23,13 +27,14 @@ interface UploadItem {
 
 @Component({
   selector: 'app-files',
-  imports: [DatePipe, MatButtonModule, MatIconModule, MatProgressBarModule],
+  imports: [DatePipe, MatButtonModule, MatIconModule, MatProgressBarModule, SkeletonList, PullToRefresh, HapticDirective],
   templateUrl: './files.html',
   styleUrl: './files.scss',
 })
 export class Files implements OnInit {
   private filesApi = inject(FilesApi);
   private dialog = inject(MatDialog);
+  private toast = inject(ToastService);
 
   protected readonly acceptAttr = ACCEPTED_EXTENSIONS.join(',');
   protected readonly files = signal<NoteFile[]>([]);
@@ -96,7 +101,13 @@ export class Files implements OnInit {
 
   delete(file: NoteFile): void {
     if (!confirm(`Delete "${file.filename}"? This cannot be undone.`)) return;
-    this.filesApi.delete(file.id).subscribe(() => this.load());
+    this.filesApi.delete(file.id).subscribe({
+      next: () => {
+        this.load();
+        this.toast.success('File deleted');
+      },
+      error: () => this.toast.error('Failed to delete file'),
+    });
   }
 
   dismissUpload(item: UploadItem): void {
@@ -155,6 +166,14 @@ export class Files implements OnInit {
       if (remaining === 0) {
         this.uploading.set(false);
         this.load();
+        const failed = items.filter((i) => i.status === 'error').length;
+        if (failed === 0) {
+          this.toast.success(items.length === 1 ? 'File uploaded' : 'Files uploaded');
+        } else if (failed === items.length) {
+          this.toast.error(items.length === 1 ? 'Upload failed' : 'All uploads failed');
+        } else {
+          this.toast.error(`${failed} of ${items.length} uploads failed`);
+        }
       }
     };
 

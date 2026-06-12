@@ -1,0 +1,8 @@
+<div class="ptr-indicator" [style.height.px]="pullDistance()">
+  @if (pullDistance() > 0) {
+    <mat-icon class="ptr-icon" [class.spinning]="refreshing()">refresh</mat-icon>
+  }
+</div>
+<div class="ptr-content" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)" (touchend)="onTouchEnd()">
+  <ng-content></ng-content>
+</div>

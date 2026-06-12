@@ -1,4 +1,5 @@
 <div class="files-page">
+  <app-pull-to-refresh [refreshing]="loading()" (refresh)="load()">
   <h1>Files</h1>
 
   <div
@@ -66,7 +67,7 @@
   }
 
   @if (loading()) {
-    <p class="status-text">Loading files…</p>
+    <app-skeleton-list [rows]="5" />
   } @else if (files().length === 0) {
     <div class="empty-state">
       <mat-icon class="empty-icon">upload_file</mat-icon>
@@ -93,7 +94,7 @@
             <button mat-icon-button (click)="download(file)" aria-label="Download file">
               <mat-icon>download</mat-icon>
             </button>
-            <button mat-icon-button (click)="delete(file)" aria-label="Delete file">
+            <button mat-icon-button appHaptic (click)="delete(file)" aria-label="Delete file">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
@@ -101,4 +102,5 @@
       }
     </div>
   }
+  </app-pull-to-refresh>
 </div>

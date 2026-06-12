@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { NotesApi } from '../../../core/services/notes';
+import { ToastService } from '../../../core/services/toast';
 import { CONTENT_TYPES, ContentType, Note } from '../../../core/models/note.model';
 
 @Component({
@@ -28,6 +29,7 @@ import { CONTENT_TYPES, ContentType, Note } from '../../../core/models/note.mode
 export class QuickAddDialog {
   private notesApi = inject(NotesApi);
   private dialogRef = inject(MatDialogRef<QuickAddDialog, Note | undefined>);
+  private toast = inject(ToastService);
 
   protected readonly contentTypes = CONTENT_TYPES;
   protected readonly title = signal('');
@@ -64,9 +66,13 @@ export class QuickAddDialog {
       .subscribe({
         next: (note) => {
           this.saving.set(false);
+          this.toast.success('Note saved');
           this.dialogRef.close(note);
         },
-        error: () => this.saving.set(false),
+        error: () => {
+          this.saving.set(false);
+          this.toast.error('Failed to save note');
+        },
       });
   }
 

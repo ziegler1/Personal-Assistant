@@ -6,7 +6,11 @@
   }
 
   <mat-sidenav-content class="app-content">
-    <main class="page-content">
+    <main
+      class="page-content"
+      [class.nav-forward]="navDirection() === 'forward'"
+      [class.nav-back]="navDirection() === 'back'"
+    >
       <router-outlet />
     </main>
   </mat-sidenav-content>

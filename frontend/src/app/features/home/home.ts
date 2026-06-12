@@ -4,11 +4,17 @@ import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { NotesApi } from '../../core/services/notes';
 import { FilesApi } from '../../core/services/files';
 import { ChatApi } from '../../core/services/chat';
+import { HapticService } from '../../core/services/haptic';
+import { ToastService } from '../../core/services/toast';
 import { Note } from '../../core/models/note.model';
 import { NoteRow } from '../../shared/note-row/note-row';
+import { NoteActionSheet } from '../../shared/note-action-sheet/note-action-sheet';
+import { shareNote } from '../../shared/share-note';
+import { HapticDirective } from '../../shared/haptic.directive';
 import { QuickAddDialog } from './quick-add-dialog/quick-add-dialog';
 
 interface RecentChat {
@@ -18,7 +24,7 @@ interface RecentChat {
 
 @Component({
   selector: 'app-home',
-  imports: [FormsModule, MatButtonModule, MatIconModule, NoteRow],
+  imports: [FormsModule, MatButtonModule, MatIconModule, NoteRow, HapticDirective],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -28,6 +34,9 @@ export class Home implements OnInit {
   private chatApi = inject(ChatApi);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private bottomSheet = inject(MatBottomSheet);
+  private haptic = inject(HapticService);
+  private toast = inject(ToastService);
 
   protected readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
   protected readonly query = signal('');
@@ -37,6 +46,7 @@ export class Home implements OnInit {
   protected readonly fileCount = signal(0);
   protected readonly lastUpdated = signal('—');
   protected readonly recentChats = signal<RecentChat[]>([]);
+  protected readonly fabOpen = signal(false);
 
   ngOnInit(): void {
     this.loadRecentNotes();
@@ -116,7 +126,32 @@ export class Home implements OnInit {
 
   deleteNote(id: string): void {
     if (!confirm('Delete this note? This cannot be undone.')) return;
-    this.notesApi.delete(id).subscribe(() => this.loadRecentNotes());
+    this.notesApi.delete(id).subscribe({
+      next: () => {
+        this.loadRecentNotes();
+        this.toast.success('Note deleted');
+      },
+      error: () => this.toast.error('Failed to delete note'),
+    });
+  }
+
+  openActionSheet(note: Note): void {
+    this.bottomSheet
+      .open(NoteActionSheet, { data: { title: note.title } })
+      .afterDismissed()
+      .subscribe((action) => {
+        switch (action) {
+          case 'edit':
+            this.router.navigate(['/notes', note.id], { queryParams: { edit: 1 } });
+            break;
+          case 'delete':
+            this.deleteNote(note.id);
+            break;
+          case 'share':
+            shareNote(note, this.toast);
+            break;
+        }
+      });
   }
 
   openQuickAdd(): void {
@@ -126,5 +161,24 @@ export class Home implements OnInit {
       .subscribe((created) => {
         if (created) this.loadRecentNotes();
       });
+  }
+
+  toggleFab(): void {
+    this.haptic.tap();
+    this.fabOpen.set(!this.fabOpen());
+  }
+
+  closeFab(): void {
+    this.fabOpen.set(false);
+  }
+
+  newNoteFromFab(): void {
+    this.closeFab();
+    this.openQuickAdd();
+  }
+
+  uploadFileFromFab(): void {
+    this.closeFab();
+    this.goFiles();
   }
 }

@@ -20,7 +20,7 @@
 
   <div class="chat-thread" #thread>
     @if (historyLoading()) {
-      <p class="status-text">Loading conversation…</p>
+      <app-skeleton-list variant="chat" [rows]="4" />
     } @else if (messages().length === 0) {
       <div class="empty-state">
         <mat-icon class="empty-icon">forum</mat-icon>
@@ -133,7 +133,7 @@
         placeholder="Message your assistant…"
         [disabled]="loading()"
       />
-      <button mat-icon-button class="send-button" (click)="send()" [disabled]="loading() || !input().trim()" aria-label="Send message">
+      <button mat-icon-button class="send-button" appHaptic (click)="send()" [disabled]="loading() || !input().trim()" aria-label="Send message">
         <mat-icon>send</mat-icon>
       </button>
     </div>

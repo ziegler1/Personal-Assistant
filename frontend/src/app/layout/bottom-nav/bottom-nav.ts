@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { HapticDirective } from '../../shared/haptic.directive';
 
 interface BottomNavItem {
   path: string;
@@ -11,7 +12,7 @@ interface BottomNavItem {
 
 @Component({
   selector: 'app-bottom-nav',
-  imports: [RouterLink, RouterLinkActive, MatIconModule],
+  imports: [RouterLink, RouterLinkActive, MatIconModule, HapticDirective],
   templateUrl: './bottom-nav.html',
   styleUrl: './bottom-nav.scss',
 })

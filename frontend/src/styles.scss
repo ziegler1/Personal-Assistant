@@ -116,6 +116,51 @@ a {
 }
 
 // ---------------------------------------------------------------------
+// Micro-interactions: pressed states, skeleton shimmer, toast theming.
+// ---------------------------------------------------------------------
+
+// Slight scale-down on press for all standard and Material buttons.
+button:not(:disabled),
+.mat-mdc-button-base:not(.mdc-fab--touch) {
+  transition: transform var(--app-transition);
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.skeleton-block {
+  background: linear-gradient(90deg, var(--app-surface) 25%, var(--app-surface-2) 37%, var(--app-surface) 63%);
+  background-size: 400% 100%;
+  border-radius: 4px;
+  animation: skeleton-shimmer 1.4s ease infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+.mat-mdc-snack-bar-container {
+  &.toast-success .mdc-snackbar__surface {
+    background: var(--app-success);
+  }
+
+  &.toast-error .mdc-snackbar__surface {
+    background: var(--app-danger);
+  }
+
+  &.toast-success .mdc-snackbar__label,
+  &.toast-error .mdc-snackbar__label {
+    color: #fff;
+  }
+}
+
+// ---------------------------------------------------------------------
 // ngx-markdown renders parsed HTML via `innerHTML` directly on the
 // `<markdown>` host element, bypassing component view encapsulation - so
 // its typography lives here globally rather than per-component.

@@ -10,6 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MarkdownModule } from 'ngx-markdown';
 import { ChatApi } from '../../core/services/chat';
 import { NotesApi } from '../../core/services/notes';
+import { ToastService } from '../../core/services/toast';
 import {
   CONTENT_TYPES,
   ChatMessage,
@@ -21,6 +22,8 @@ import {
 } from '../../core/models/note.model';
 import { NotePreviewDialog } from './note-preview-dialog/note-preview-dialog';
 import { GeneratedOutputDialog } from './generated-output-dialog/generated-output-dialog';
+import { SkeletonList } from '../../shared/skeleton-list/skeleton-list';
+import { HapticDirective } from '../../shared/haptic.directive';
 
 const STREAM_WORD_DELAY_MS = 40;
 
@@ -54,6 +57,8 @@ type ThreadItem =
     MatSelectModule,
     MatMenuModule,
     MarkdownModule,
+    SkeletonList,
+    HapticDirective,
   ],
   templateUrl: './chat.html',
   styleUrl: './chat.scss',
@@ -62,6 +67,7 @@ export class Chat implements OnInit {
   private chatApi = inject(ChatApi);
   private notesApi = inject(NotesApi);
   private dialog = inject(MatDialog);
+  private toast = inject(ToastService);
 
   protected readonly contentTypes = CONTENT_TYPES;
   protected readonly generateFormats = GENERATE_FORMATS;
@@ -309,7 +315,9 @@ export class Chat implements OnInit {
         next: () => {
           for (const r of message.webResults ?? []) r.saved = true;
           this.messages.set([...this.messages()]);
+          this.toast.success('Saved to notes');
         },
+        error: () => this.toast.error('Failed to save to notes'),
       });
   }
 }

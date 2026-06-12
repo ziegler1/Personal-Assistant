@@ -1,0 +1,19 @@
+@if (variant() === 'chat') {
+  @for (i of items(); track i) {
+    <div class="skeleton-message" [class.skeleton-message-user]="i % 2 === 1">
+      <div class="skeleton-bubble">
+        <div class="skeleton-block skeleton-line" style="width: 80%"></div>
+        <div class="skeleton-block skeleton-line" style="width: 55%"></div>
+      </div>
+    </div>
+  }
+} @else {
+  @for (i of items(); track i) {
+    <div class="skeleton-row">
+      <div class="skeleton-lines">
+        <div class="skeleton-block skeleton-line skeleton-line-title"></div>
+        <div class="skeleton-block skeleton-line skeleton-line-meta"></div>
+      </div>
+    </div>
+  }
+}

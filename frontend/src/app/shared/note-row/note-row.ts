@@ -3,13 +3,15 @@ import { DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Note } from '../../core/models/note.model';
+import { LongPressDirective } from '../long-press.directive';
+import { HapticDirective } from '../haptic.directive';
 
 const SWIPE_REVEAL_WIDTH = 72;
 const SWIPE_THRESHOLD = 36;
 
 @Component({
   selector: 'app-note-row',
-  imports: [DatePipe, MatIconModule, MatButtonModule],
+  imports: [DatePipe, MatIconModule, MatButtonModule, LongPressDirective, HapticDirective],
   templateUrl: './note-row.html',
   styleUrl: './note-row.scss',
 })
@@ -17,6 +19,7 @@ export class NoteRow {
   readonly note = input.required<Note>();
   readonly open = output<void>();
   readonly delete = output<void>();
+  readonly longPress = output<void>();
 
   protected readonly translateX = signal(0);
   protected readonly swiped = signal(false);

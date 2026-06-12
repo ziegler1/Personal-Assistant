@@ -1,10 +1,12 @@
 <div class="note-row-wrapper">
-  <button class="swipe-action" (click)="onSwipeDelete()" aria-label="Delete note">
+  <button class="swipe-action" appHaptic (click)="onSwipeDelete()" aria-label="Delete note">
     <mat-icon>delete</mat-icon>
   </button>
 
   <div
     class="note-row"
+    appLongPress
+    (longPress)="longPress.emit()"
     [style.transform]="'translateX(' + translateX() + 'px)'"
     (click)="onRowClick()"
     (touchstart)="onTouchStart($event)"
@@ -28,6 +30,7 @@
     <button
       mat-icon-button
       class="delete-btn"
+      appHaptic
       (click)="$event.stopPropagation(); delete.emit()"
       aria-label="Delete note"
     >

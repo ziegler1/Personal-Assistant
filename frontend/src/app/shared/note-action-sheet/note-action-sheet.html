@@ -1,0 +1,15 @@
+<div class="action-sheet">
+  <h3 class="action-sheet-title">{{ data.title }}</h3>
+  <button class="action-item" (click)="select('edit')">
+    <mat-icon>edit</mat-icon>
+    Edit
+  </button>
+  <button class="action-item" (click)="select('share')">
+    <mat-icon>share</mat-icon>
+    Share
+  </button>
+  <button class="action-item action-item-danger" (click)="select('delete')">
+    <mat-icon>delete</mat-icon>
+    Delete
+  </button>
+</div>
