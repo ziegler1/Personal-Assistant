@@ -1,173 +1,175 @@
 <div class="editor-page">
-  <div class="page-header">
-    <h1>{{ isNew ? 'New Note' : mode() === 'edit' ? 'Edit Note' : title() }}</h1>
-    <div class="header-actions">
-      @if (mode() === 'view') {
-        <button mat-stroked-button color="warn" (click)="delete()">
+  @if (loading()) {
+    <p class="status-text">Loading…</p>
+  } @else if (mode() === 'view') {
+    <div class="detail-header">
+      <button mat-icon-button (click)="backToList()" aria-label="Back to notes">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-actions">
+        <button mat-icon-button class="danger-icon-btn" (click)="delete()" aria-label="Delete note">
           <mat-icon>delete</mat-icon>
-          Delete
         </button>
-        <button mat-stroked-button (click)="backToList()">Back</button>
         <button mat-flat-button color="primary" (click)="edit()">
           <mat-icon>edit</mat-icon>
           Edit
         </button>
+      </div>
+    </div>
+
+    <h1 class="detail-title">{{ title() }}</h1>
+
+    <div class="detail-meta">
+      <span class="type-badge">{{ contentType() }}</span>
+      @if (source()) {
+        <span class="detail-source">
+          Source:
+          @if (sourceIsUrl) {
+            <a [href]="source()" target="_blank" rel="noopener">{{ source() }}</a>
+          } @else {
+            {{ source() }}
+          }
+        </span>
+      }
+      <span class="detail-date">Updated {{ updatedAt() | date: 'MMM d, y, h:mm a' }}</span>
+    </div>
+
+    @if (tags().length > 0) {
+      <mat-chip-set class="detail-tags">
+        @for (tag of tags(); track tag) {
+          <mat-chip>{{ tag }}</mat-chip>
+        }
+      </mat-chip-set>
+    }
+
+    @if (contentType() === 'code') {
+      <pre class="detail-content detail-content-code">{{ content() }}</pre>
+    } @else {
+      <mat-button-toggle-group
+        class="view-toggle"
+        [value]="showRaw() ? 'raw' : 'rendered'"
+        (change)="showRaw.set($event.value === 'raw')"
+        aria-label="Content view mode"
+      >
+        <mat-button-toggle value="rendered">Rendered</mat-button-toggle>
+        <mat-button-toggle value="raw">Raw</mat-button-toggle>
+      </mat-button-toggle-group>
+      @if (showRaw()) {
+        <pre class="detail-content">{{ content() }}</pre>
       } @else {
+        <markdown class="detail-content detail-markdown" [data]="content()"></markdown>
+      }
+    }
+
+    @if (files().length > 0) {
+      <div class="files-section">
+        <label class="field-label">Attached files</label>
+        <ul class="file-list">
+          @for (file of files(); track file.id) {
+            <li>
+              <mat-icon>attach_file</mat-icon>
+              <span>{{ file.filename }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  } @else {
+    <div class="editor-header">
+      <button mat-button (click)="cancel()">Cancel</button>
+      <div class="header-actions">
         @if (!isNew) {
-          <button mat-stroked-button color="warn" (click)="delete()">
+          <button mat-icon-button class="danger-icon-btn" (click)="delete()" aria-label="Delete note">
             <mat-icon>delete</mat-icon>
-            Delete
           </button>
         }
-        <button mat-stroked-button (click)="cancel()">Cancel</button>
         <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || !title().trim()">
           <mat-icon>save</mat-icon>
           Save
         </button>
+      </div>
+    </div>
+
+    <input
+      class="title-input"
+      type="text"
+      placeholder="Untitled note"
+      [ngModel]="title()"
+      (ngModelChange)="title.set($event)"
+    />
+
+    <div class="type-chip-row">
+      @for (type of contentTypes; track type) {
+        <button class="type-chip" [class.active]="contentType() === type" (click)="contentType.set(type)">
+          {{ type }}
+        </button>
       }
     </div>
-  </div>
 
-  @if (loading()) {
-    <p class="status-text">Loading…</p>
-  } @else if (mode() === 'view') {
-    <div class="app-card note-detail">
-      <div class="detail-meta">
-        <span class="type-badge">{{ contentType() }}</span>
-        @if (source()) {
-          <span class="detail-source">
-            Source:
-            @if (sourceIsUrl) {
-              <a [href]="source()" target="_blank" rel="noopener">{{ source() }}</a>
-            } @else {
-              {{ source() }}
-            }
-          </span>
-        }
-        <span class="detail-date">Updated {{ updatedAt() | date: 'MMM d, y, h:mm a' }}</span>
-      </div>
+    <mat-form-field appearance="outline" class="source-field">
+      <mat-label>Source</mat-label>
+      <input
+        matInput
+        [ngModel]="source()"
+        (ngModelChange)="source.set($event)"
+        placeholder="Optional source / URL"
+      />
+    </mat-form-field>
 
-      @if (tags().length > 0) {
-        <mat-chip-set>
-          @for (tag of tags(); track tag) {
-            <mat-chip>{{ tag }}</mat-chip>
-          }
-        </mat-chip-set>
-      }
-
-      @if (contentType() === 'code') {
-        <pre class="detail-content detail-content-code">{{ content() }}</pre>
-      } @else {
-        <mat-button-toggle-group
-          class="view-toggle"
-          [value]="showRaw() ? 'raw' : 'rendered'"
-          (change)="showRaw.set($event.value === 'raw')"
-          aria-label="Content view mode"
-        >
-          <mat-button-toggle value="rendered">Rendered</mat-button-toggle>
-          <mat-button-toggle value="raw">Raw</mat-button-toggle>
-        </mat-button-toggle-group>
-        @if (showRaw()) {
-          <pre class="detail-content">{{ content() }}</pre>
-        } @else {
-          <markdown class="detail-content detail-markdown" [data]="content()"></markdown>
-        }
-      }
-
-      @if (files().length > 0) {
-        <div class="files-section">
-          <label class="field-label">Attached files</label>
-          <ul class="file-list">
-            @for (file of files(); track file.id) {
-              <li>
-                <mat-icon>attach_file</mat-icon>
-                <span>{{ file.filename }}</span>
-              </li>
-            }
-          </ul>
-        </div>
-      }
+    <div class="content-field">
+      <textarea
+        class="content-textarea"
+        [class.monospace]="contentType() === 'code'"
+        cdkTextareaAutosize
+        cdkAutosizeMinRows="8"
+        placeholder="Write something…"
+        [ngModel]="content()"
+        (ngModelChange)="content.set($event)"
+      ></textarea>
+      <div class="content-meta">{{ wordCount() }} words · {{ charCount() }} chars</div>
     </div>
-  } @else {
-    <div class="app-card editor-form">
-      <mat-form-field appearance="outline">
-        <mat-label>Title</mat-label>
-        <input matInput [ngModel]="title()" (ngModelChange)="title.set($event)" />
-      </mat-form-field>
 
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="type-field">
-          <mat-label>Content type</mat-label>
-          <mat-select [ngModel]="contentType()" (ngModelChange)="contentType.set($event)">
-            @for (type of contentTypes; track type) {
-              <mat-option [value]="type">{{ type }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="source-field">
-          <mat-label>Source</mat-label>
-          <input
-            matInput
-            [ngModel]="source()"
-            (ngModelChange)="source.set($event)"
-            placeholder="Optional source / URL"
-          />
-        </mat-form-field>
-      </div>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Content</mat-label>
-        <textarea
+    <div class="tags-section">
+      <label class="field-label">Tags</label>
+      <mat-chip-set>
+        @for (tag of tags(); track tag) {
+          <mat-chip [removable]="true" (removed)="removeTag(tag)">
+            {{ tag }}
+            <button matChipRemove aria-label="Remove tag">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+        }
+      </mat-chip-set>
+      <mat-form-field appearance="outline" class="tag-input-field">
+        <input
           matInput
-          rows="14"
-          [ngModel]="content()"
-          (ngModelChange)="content.set($event)"
-        ></textarea>
-      </mat-form-field>
-
-      <div class="tags-section">
-        <label class="field-label">Tags</label>
-        <mat-chip-set>
-          @for (tag of tags(); track tag) {
-            <mat-chip [removable]="true" (removed)="removeTag(tag)">
-              {{ tag }}
-              <button matChipRemove aria-label="Remove tag">
-                <mat-icon>cancel</mat-icon>
-              </button>
-            </mat-chip>
+          [ngModel]="tagInput()"
+          (ngModelChange)="tagInput.set($event)"
+          (keyup.enter)="addTag()"
+          [matAutocomplete]="tagAuto"
+          placeholder="Add a tag and press Enter"
+        />
+        <mat-autocomplete #tagAuto="matAutocomplete" (optionSelected)="selectTag($event.option.value)">
+          @for (tag of filteredTags(); track tag) {
+            <mat-option [value]="tag">{{ tag }}</mat-option>
           }
-        </mat-chip-set>
-        <mat-form-field appearance="outline" class="tag-input-field">
-          <input
-            matInput
-            [ngModel]="tagInput()"
-            (ngModelChange)="tagInput.set($event)"
-            (keyup.enter)="addTag()"
-            [matAutocomplete]="tagAuto"
-            placeholder="Add a tag and press Enter"
-          />
-          <mat-autocomplete #tagAuto="matAutocomplete" (optionSelected)="selectTag($event.option.value)">
-            @for (tag of filteredTags(); track tag) {
-              <mat-option [value]="tag">{{ tag }}</mat-option>
-            }
-          </mat-autocomplete>
-        </mat-form-field>
-      </div>
-
-      @if (files().length > 0) {
-        <div class="files-section">
-          <label class="field-label">Attached files</label>
-          <ul class="file-list">
-            @for (file of files(); track file.id) {
-              <li>
-                <mat-icon>attach_file</mat-icon>
-                <span>{{ file.filename }}</span>
-              </li>
-            }
-          </ul>
-        </div>
-      }
+        </mat-autocomplete>
+      </mat-form-field>
     </div>
+
+    @if (files().length > 0) {
+      <div class="files-section">
+        <label class="field-label">Attached files</label>
+        <ul class="file-list">
+          @for (file of files(); track file.id) {
+            <li>
+              <mat-icon>attach_file</mat-icon>
+              <span>{{ file.filename }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
   }
 </div>

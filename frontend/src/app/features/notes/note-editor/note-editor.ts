@@ -6,10 +6,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { TextFieldModule } from '@angular/cdk/text-field';
 import { MarkdownModule } from 'ngx-markdown';
 import { NotesApi } from '../../../core/services/notes';
 import { CONTENT_TYPES, ContentType, Note, NoteFile } from '../../../core/models/note.model';
@@ -31,10 +31,10 @@ interface NoteFormSnapshot {
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
     MatChipsModule,
     MatAutocompleteModule,
     MatButtonToggleModule,
+    TextFieldModule,
     MarkdownModule,
   ],
   templateUrl: './note-editor.html',
@@ -63,6 +63,11 @@ export class NoteEditor implements OnInit {
     );
   });
   protected readonly updatedAt = signal('');
+  protected readonly charCount = computed(() => this.content().length);
+  protected readonly wordCount = computed(() => {
+    const trimmed = this.content().trim();
+    return trimmed ? trimmed.split(/\s+/).length : 0;
+  });
   protected readonly files = signal<NoteFile[]>([]);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);

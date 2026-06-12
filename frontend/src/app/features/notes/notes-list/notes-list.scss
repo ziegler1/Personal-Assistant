@@ -1,7 +1,7 @@
 .notes-page {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .page-header {
@@ -17,15 +17,48 @@
   }
 }
 
-.filters {
+.type-filter-row {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.filter-field {
-  width: 220px;
+.filter-chip {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text-secondary);
+  font-size: 0.85rem;
+  font-family: inherit;
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: background var(--app-transition), color var(--app-transition), border-color var(--app-transition);
+
+  &:hover {
+    border-color: var(--app-accent);
+  }
+
+  &.active {
+    background: var(--app-accent);
+    border-color: var(--app-accent);
+    color: var(--mat-sys-on-primary, #ffffff);
+    font-weight: 600;
+  }
+}
+
+.tag-filter-field {
+  width: 100%;
+  max-width: 320px;
 }
 
 .status-text {
@@ -35,4 +68,25 @@
 .notes-list {
   display: flex;
   flex-direction: column;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 20px;
+  color: var(--app-text-secondary);
+  text-align: center;
+
+  .empty-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 64px;
+    color: var(--app-text-muted);
+  }
+
+  p {
+    margin: 0;
+  }
 }

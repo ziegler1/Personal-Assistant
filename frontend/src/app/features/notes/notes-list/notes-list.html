@@ -7,35 +7,50 @@
     </button>
   </div>
 
-  <div class="filters">
-    <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Content type</mat-label>
-      <mat-select [ngModel]="selectedType()" (ngModelChange)="selectedType.set($event); load()">
-        <mat-option value="">All types</mat-option>
-        @for (type of contentTypes; track type) {
-          <mat-option [value]="type">{{ type }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Tag</mat-label>
-      <input
-        matInput
-        [ngModel]="tagFilter()"
-        (ngModelChange)="tagFilter.set($event)"
-        (keyup.enter)="load()"
-        placeholder="Filter by tag"
-      />
-    </mat-form-field>
-
-    <button mat-stroked-button (click)="load()">Apply</button>
+  <div class="type-filter-row">
+    @for (type of contentTypes; track type) {
+      <button
+        class="filter-chip"
+        [class.active]="filterState.contentType() === type"
+        (click)="selectType(type)"
+      >
+        {{ type === '' ? 'All' : type }}
+      </button>
+    }
   </div>
+
+  <mat-form-field appearance="outline" class="tag-filter-field">
+    <mat-label>Filter by tag</mat-label>
+    <input
+      matInput
+      [ngModel]="filterState.tag()"
+      (ngModelChange)="onTagInput($event)"
+      placeholder="Start typing to filter…"
+    />
+    @if (filterState.tag()) {
+      <button matSuffix mat-icon-button (click)="onTagInput('')" aria-label="Clear tag filter">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </mat-form-field>
 
   @if (loading()) {
     <p class="status-text">Loading notes…</p>
   } @else if (notes().length === 0) {
-    <p class="status-text">No notes found.</p>
+    @if (hasActiveFilters()) {
+      <div class="empty-state">
+        <mat-icon class="empty-icon">search_off</mat-icon>
+        <p>No notes match these filters</p>
+      </div>
+    } @else {
+      <div class="empty-state">
+        <mat-icon class="empty-icon">description</mat-icon>
+        <p>No notes yet — tap + to add your first</p>
+        <button mat-fab color="primary" (click)="newNote()" aria-label="New note">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+    }
   } @else {
     <div class="notes-list">
       @for (note of notes(); track note.id) {

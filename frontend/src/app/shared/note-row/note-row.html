@@ -1,24 +1,37 @@
-<div class="note-row" (click)="open.emit()">
-  <div class="note-row-main">
-    <div class="note-row-line">
-      <span class="note-title">{{ note().title }}</span>
-      <span class="type-badge">{{ note().content_type }}</span>
-      <span class="note-date">{{ note().updated_at | date: 'MMM d, y' }}</span>
-    </div>
-    @if (note().tags.length > 0) {
-      <div class="note-tags">
-        @for (tag of note().tags; track tag) {
-          <span class="tag-chip">{{ tag }}</span>
-        }
-      </div>
-    }
-  </div>
-  <button
-    mat-icon-button
-    class="delete-btn"
-    (click)="$event.stopPropagation(); delete.emit()"
-    aria-label="Delete note"
-  >
+<div class="note-row-wrapper">
+  <button class="swipe-action" (click)="onSwipeDelete()" aria-label="Delete note">
     <mat-icon>delete</mat-icon>
   </button>
+
+  <div
+    class="note-row"
+    [style.transform]="'translateX(' + translateX() + 'px)'"
+    (click)="onRowClick()"
+    (touchstart)="onTouchStart($event)"
+    (touchmove)="onTouchMove($event)"
+    (touchend)="onTouchEnd()"
+  >
+    <div class="note-row-main">
+      <div class="note-row-line">
+        <span class="note-title">{{ note().title }}</span>
+        <span class="type-badge">{{ note().content_type }}</span>
+        <span class="note-date">{{ note().updated_at | date: 'MMM d, y' }}</span>
+      </div>
+      @if (note().tags.length > 0) {
+        <div class="note-tags">
+          @for (tag of note().tags; track tag) {
+            <span class="tag-chip">{{ tag }}</span>
+          }
+        </div>
+      }
+    </div>
+    <button
+      mat-icon-button
+      class="delete-btn"
+      (click)="$event.stopPropagation(); delete.emit()"
+      aria-label="Delete note"
+    >
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
 </div>

@@ -1,18 +1,40 @@
+.note-row-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--app-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.swipe-action {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 72px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-danger);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
 .note-row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 4px;
-  border-bottom: 1px solid var(--app-border);
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform var(--app-transition);
+  touch-action: pan-y;
 
   &:hover {
     background: var(--app-surface);
-  }
-
-  &:last-child {
-    border-bottom: none;
   }
 }
 
@@ -88,7 +110,15 @@
 }
 
 @media (hover: none) {
+  .note-row {
+    background: var(--app-bg);
+  }
+
+  .swipe-action {
+    display: flex;
+  }
+
   .delete-btn {
-    opacity: 1;
+    display: none;
   }
 }
