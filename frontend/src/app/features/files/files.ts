@@ -1,15 +1,17 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { HttpEventType } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { FilesApi } from '../../core/services/files';
 import { NoteFile } from '../../core/models/note.model';
+import { FilePreviewDialog } from './file-preview-dialog/file-preview-dialog';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.txt', '.md', '.json'];
+const MOBILE_BREAKPOINT = 600;
 
 interface UploadItem {
   filename: string;
@@ -27,7 +29,7 @@ interface UploadItem {
 })
 export class Files implements OnInit {
   private filesApi = inject(FilesApi);
-  private router = inject(Router);
+  private dialog = inject(MatDialog);
 
   protected readonly acceptAttr = ACCEPTED_EXTENSIONS.join(',');
   protected readonly files = signal<NoteFile[]>([]);
@@ -35,6 +37,7 @@ export class Files implements OnInit {
   protected readonly uploading = signal(false);
   protected readonly isDragging = signal(false);
   protected readonly uploadItems = signal<UploadItem[]>([]);
+  protected readonly dropzoneCollapsed = signal(window.innerWidth <= MOBILE_BREAKPOINT);
 
   ngOnInit(): void {
     this.load();
@@ -49,6 +52,10 @@ export class Files implements OnInit {
       },
       error: () => this.loading.set(false),
     });
+  }
+
+  toggleDropzone(): void {
+    this.dropzoneCollapsed.set(!this.dropzoneCollapsed());
   }
 
   onDragOver(event: DragEvent): void {
@@ -73,6 +80,14 @@ export class Files implements OnInit {
     input.value = '';
   }
 
+  preview(file: NoteFile): void {
+    this.dialog.open(FilePreviewDialog, {
+      width: '600px',
+      maxWidth: '90vw',
+      data: { file },
+    });
+  }
+
   download(file: NoteFile): void {
     this.filesApi.getDownloadUrl(file.id).subscribe((res) => {
       window.open(res.url, '_blank');
@@ -82,10 +97,6 @@ export class Files implements OnInit {
   delete(file: NoteFile): void {
     if (!confirm(`Delete "${file.filename}"? This cannot be undone.`)) return;
     this.filesApi.delete(file.id).subscribe(() => this.load());
-  }
-
-  openNote(noteId: string): void {
-    this.router.navigate(['/notes', noteId]);
   }
 
   dismissUpload(item: UploadItem): void {
@@ -106,6 +117,15 @@ export class Files implements OnInit {
     if (mimeType.startsWith('text/')) return 'article';
     if (mimeType === 'application/json') return 'data_object';
     return 'insert_drive_file';
+  }
+
+  fileIconClass(mimeType: string | null): string {
+    if (!mimeType) return 'file-icon-default';
+    if (mimeType === 'application/pdf') return 'file-icon-pdf';
+    if (mimeType.startsWith('image/')) return 'file-icon-image';
+    if (mimeType.startsWith('text/')) return 'file-icon-text';
+    if (mimeType === 'application/json') return 'file-icon-json';
+    return 'file-icon-default';
   }
 
   private validateFile(file: File): string | null {

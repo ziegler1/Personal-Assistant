@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>{{ file.filename }}</h2>
+<mat-dialog-content class="preview-content">
+  @if (loading()) {
+    <p class="status-text">Loading…</p>
+  } @else if (isImage && previewUrl()) {
+    <img class="preview-image" [src]="previewUrl()" [alt]="file.filename" />
+  } @else if (isPdf && previewUrl()) {
+    <iframe class="preview-pdf" [src]="previewUrl()" title="PDF preview"></iframe>
+  } @else if (note()) {
+    <div class="detail-meta">
+      <span class="type-badge">{{ note()!.content_type }}</span>
+      <span class="detail-date">Updated {{ note()!.updated_at | date: 'MMM d, y, h:mm a' }}</span>
+    </div>
+    @if (note()!.content_type === 'code') {
+      <pre class="preview-note-content preview-note-content-code">{{ note()!.content }}</pre>
+    } @else {
+      <markdown class="preview-note-content preview-note-markdown" [data]="note()!.content"></markdown>
+    }
+  } @else if (file.extraction_status === 'empty') {
+    <p class="status-text">No text could be extracted from this file.</p>
+  } @else {
+    <p class="status-text">No preview available for this file.</p>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Close</button>
+  @if (file.note_id) {
+    <button mat-flat-button color="primary" (click)="openFull()">Open full note</button>
+  }
+</mat-dialog-actions>

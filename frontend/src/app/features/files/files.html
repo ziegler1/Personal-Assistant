@@ -3,18 +3,31 @@
 
   <div
     class="dropzone"
+    [class.dropzone-collapsed]="dropzoneCollapsed()"
     [class.dropzone-active]="isDragging()"
     (dragover)="onDragOver($event)"
     (dragleave)="onDragLeave()"
     (drop)="onDrop($event)"
   >
-    <mat-icon>cloud_upload</mat-icon>
-    <p>Drag and drop files here, or</p>
-    <button mat-stroked-button (click)="fileInput.click()" [disabled]="uploading()">
-      Browse files
-    </button>
+    <div class="dropzone-row">
+      <mat-icon class="dropzone-icon">cloud_upload</mat-icon>
+      <p class="dropzone-text">
+        Drop files or <button type="button" class="browse-link" (click)="fileInput.click()">browse</button>
+      </p>
+      <button
+        type="button"
+        class="dropzone-toggle"
+        (click)="toggleDropzone()"
+        [attr.aria-label]="dropzoneCollapsed() ? 'Expand upload area' : 'Collapse upload area'"
+        [attr.aria-expanded]="!dropzoneCollapsed()"
+      >
+        <mat-icon>{{ dropzoneCollapsed() ? 'expand_more' : 'expand_less' }}</mat-icon>
+      </button>
+    </div>
     <input #fileInput type="file" multiple hidden [accept]="acceptAttr" (change)="onFileInputChange($event)" />
-    <p class="accepted-types">PDF, PNG, JPG, TXT, MD, JSON · up to 50MB</p>
+    @if (!dropzoneCollapsed()) {
+      <p class="accepted-types">PDF, PNG, JPG, TXT, MD, JSON · up to 50MB</p>
+    }
   </div>
 
   @if (uploadItems().length > 0) {
@@ -55,20 +68,24 @@
   @if (loading()) {
     <p class="status-text">Loading files…</p>
   } @else if (files().length === 0) {
-    <p class="status-text">No files uploaded yet.</p>
+    <div class="empty-state">
+      <mat-icon class="empty-icon">upload_file</mat-icon>
+      <p>No files yet — upload your first</p>
+      <button mat-stroked-button (click)="fileInput.click()">
+        <mat-icon>add</mat-icon>
+        Upload file
+      </button>
+    </div>
   } @else {
     <div class="file-list">
       @for (file of files(); track file.id) {
         <div class="file-row">
-          <mat-icon class="file-icon">{{ fileIcon(file.mime_type) }}</mat-icon>
-          <span class="file-name">{{ file.filename }}</span>
+          <mat-icon class="file-icon" [class]="fileIconClass(file.mime_type)">{{ fileIcon(file.mime_type) }}</mat-icon>
+          <button class="file-name" (click)="preview(file)">{{ file.filename }}</button>
           @if (file.extraction_status === 'empty') {
             <mat-icon class="extraction-warning" title="No searchable text could be extracted from this file"
               >warning</mat-icon
             >
-          }
-          @if (file.note_title && file.note_id) {
-            <button class="link-button" (click)="openNote(file.note_id)">{{ file.note_title }}</button>
           }
           <span class="file-size">{{ formatSize(file.size_bytes) }}</span>
           <span class="file-date">{{ file.created_at | date: 'MMM d, y' }}</span>
