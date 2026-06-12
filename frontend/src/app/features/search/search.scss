@@ -28,7 +28,7 @@
 }
 
 .relevance-label {
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
   font-size: 0.85rem;
   white-space: nowrap;
 }
@@ -39,7 +39,7 @@
 }
 
 .status-text {
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
 }
 
 .results-list {
@@ -80,12 +80,12 @@
 
 .result-snippet {
   margin: 0;
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
   font-size: 0.9rem;
   line-height: 1.5;
 
   ::ng-deep b {
-    color: var(--app-text);
+    color: var(--app-text-primary);
     background: rgba(6, 182, 212, 0.25);
     border-radius: 3px;
     padding: 0 2px;

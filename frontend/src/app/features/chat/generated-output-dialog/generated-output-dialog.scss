@@ -7,7 +7,7 @@
 }
 
 .status-text {
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
   font-size: 0.85rem;
   align-self: center;
   margin-right: auto;
@@ -20,7 +20,7 @@
   font-family: inherit;
   font-size: 0.95rem;
   line-height: 1.6;
-  color: var(--app-text);
+  color: var(--app-text-primary);
   max-height: 60vh;
   overflow-y: auto;
 }
@@ -36,7 +36,7 @@
   max-height: 60vh;
   overflow: auto;
   background: #ffffff;
-  border-radius: var(--app-radius);
+  border-radius: var(--app-radius-md);
   padding: 16px;
 
   ::ng-deep svg {

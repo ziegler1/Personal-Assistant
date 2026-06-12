@@ -40,7 +40,7 @@
 }
 
 .status-text {
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
 }
 
 .date-divider {
@@ -53,13 +53,13 @@
   background: none;
   width: 100%;
   font: inherit;
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
   font-size: 0.75rem;
   text-align: center;
   cursor: pointer;
 
   &:hover {
-    color: var(--app-text);
+    color: var(--app-text-primary);
 
     .divider-line {
       background: var(--app-accent);
@@ -90,7 +90,7 @@
   align-items: center;
   gap: 12px;
   margin: 4px 0;
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
   font-size: 0.75rem;
   text-align: center;
   text-transform: uppercase;
@@ -123,7 +123,8 @@
   max-width: min(640px, 100%);
   background: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: var(--app-radius);
+  border-radius: var(--app-radius-md);
+  box-shadow: var(--app-shadow-sm);
   padding: 12px 16px;
   display: flex;
   flex-direction: column;
@@ -149,7 +150,7 @@
 }
 
 .sources-label {
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
 }
 
 .source-chip {
@@ -180,8 +181,8 @@
   gap: 4px;
   padding: 8px 10px;
   border: 1px solid var(--app-border);
-  border-radius: var(--app-radius);
-  background: var(--app-surface-elevated);
+  border-radius: var(--app-radius-md);
+  background: var(--app-surface-2);
 }
 
 .web-result-title {
@@ -196,7 +197,7 @@
 
 .web-result-content {
   margin: 0;
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
   font-size: 0.85rem;
   line-height: 1.5;
   display: -webkit-box;
@@ -245,10 +246,10 @@
 .input-hint {
   margin: 0;
   font-size: 0.8rem;
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
 
   code {
-    background: var(--app-surface-elevated);
+    background: var(--app-surface-2);
     border-radius: 4px;
     padding: 1px 5px;
     font-size: 0.8rem;

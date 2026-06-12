@@ -53,7 +53,7 @@
 .note-date {
   flex-shrink: 0;
   margin-left: auto;
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
   font-size: 0.8rem;
   white-space: nowrap;
 }
@@ -66,8 +66,8 @@
 
 .tag-chip {
   font-size: 0.75rem;
-  color: var(--app-text-muted);
-  background: var(--app-surface-elevated);
+  color: var(--app-text-secondary);
+  background: var(--app-surface-2);
   border-radius: 4px;
   padding: 1px 6px;
 }
@@ -80,7 +80,7 @@
   width: 36px;
   height: 36px;
   padding: 6px;
-  --mat-icon-button-state-layer-color: var(--app-text-muted);
+  --mat-icon-button-state-layer-color: var(--app-text-secondary);
 }
 
 .note-row:hover .delete-btn {

@@ -7,7 +7,7 @@
 }
 
 .status-text {
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
 }
 
 .detail-meta {
@@ -30,7 +30,7 @@
 
 .detail-source,
 .detail-date {
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
   font-size: 0.85rem;
 }
 
@@ -45,7 +45,7 @@
   font-family: inherit;
   font-size: 0.95rem;
   line-height: 1.6;
-  color: var(--app-text);
+  color: var(--app-text-primary);
   max-height: 50vh;
   overflow-y: auto;
 }
@@ -53,7 +53,7 @@
 .preview-note-content-code {
   font-family: 'SFMono-Regular', Consolas, Menlo, monospace;
   font-size: 0.9rem;
-  background: var(--app-surface-elevated);
+  background: var(--app-surface-2);
   border-radius: 6px;
   padding: 12px;
 }

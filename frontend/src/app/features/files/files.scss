@@ -17,9 +17,9 @@
   gap: 8px;
   padding: 40px 20px;
   border: 2px dashed var(--app-border);
-  border-radius: var(--app-radius);
+  border-radius: var(--app-radius-md);
   text-align: center;
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
   transition: border-color 0.15s ease, background 0.15s ease;
 
   p {
@@ -36,7 +36,7 @@
 
 .accepted-types {
   font-size: 0.8rem;
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
   opacity: 0.8;
 }
 
@@ -52,13 +52,13 @@
   gap: 12px;
   padding: 8px 12px;
   border: 1px solid var(--app-border);
-  border-radius: var(--app-radius);
+  border-radius: var(--app-radius-md);
   background: var(--app-surface);
 }
 
 .upload-item-icon {
   flex-shrink: 0;
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
 }
 
 .upload-item-icon-done {
@@ -66,7 +66,7 @@
 }
 
 .upload-item-icon-error {
-  color: #f87171;
+  color: var(--app-danger);
 }
 
 .upload-item-body {
@@ -93,7 +93,7 @@
 }
 
 .upload-error {
-  color: #f87171;
+  color: var(--app-danger);
 }
 
 .dropzone-active {
@@ -102,7 +102,7 @@
 }
 
 .status-text {
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
 }
 
 .file-list {
@@ -128,7 +128,7 @@
 }
 
 .extraction-warning {
-  color: #f59e0b;
+  color: var(--app-warning);
   flex-shrink: 0;
   font-size: 18px;
   width: 18px;
@@ -147,7 +147,7 @@
 .file-size,
 .file-date {
   flex-shrink: 0;
-  color: var(--app-text-muted);
+  color: var(--app-text-secondary);
   font-size: 0.8rem;
   white-space: nowrap;
 }

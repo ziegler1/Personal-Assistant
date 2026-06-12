@@ -55,7 +55,7 @@
   }
 
   .search-icon {
-    color: var(--app-text-muted);
+    color: var(--app-text-secondary);
     flex-shrink: 0;
   }
 
@@ -64,7 +64,7 @@
     border: none;
     outline: none;
     background: transparent;
-    color: var(--app-text);
+    color: var(--app-text-primary);
     font-size: 1rem;
     font-family: inherit;
     padding: 12px 0;
@@ -87,7 +87,7 @@
 
   h2 {
     font-size: 0.85rem;
-    color: var(--app-text-muted);
+    color: var(--app-text-secondary);
     font-weight: 600;
     margin: 0 0 8px;
     text-transform: uppercase;
