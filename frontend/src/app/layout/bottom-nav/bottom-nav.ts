@@ -6,6 +6,7 @@ interface BottomNavItem {
   path: string;
   label: string;
   icon: string;
+  exact: boolean;
 }
 
 @Component({
@@ -16,9 +17,10 @@ interface BottomNavItem {
 })
 export class BottomNav {
   protected readonly items: BottomNavItem[] = [
-    { path: '/notes', label: 'Notes', icon: 'description' },
-    { path: '/search', label: 'Search', icon: 'search' },
-    { path: '/chat', label: 'Chat', icon: 'forum' },
-    { path: '/files', label: 'Files', icon: 'folder' },
+    { path: '/', label: 'Home', icon: 'home', exact: true },
+    { path: '/notes', label: 'Notes', icon: 'description', exact: false },
+    { path: '/search', label: 'Search', icon: 'search', exact: false },
+    { path: '/chat', label: 'Chat', icon: 'forum', exact: false },
+    { path: '/files', label: 'Files', icon: 'folder', exact: false },
   ];
 }
