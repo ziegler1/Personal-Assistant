@@ -22,6 +22,8 @@ import {
 import { NotePreviewDialog } from './note-preview-dialog/note-preview-dialog';
 import { GeneratedOutputDialog } from './generated-output-dialog/generated-output-dialog';
 
+const STREAM_WORD_DELAY_MS = 40;
+
 interface DisplayWebResult extends ChatWebResult {
   saved?: boolean;
 }
@@ -30,6 +32,7 @@ interface DisplayMessage extends ChatMessage {
   sources?: ChatSource[] | null;
   webResults?: DisplayWebResult[] | null;
   generating?: boolean;
+  streaming?: boolean;
   created_at: string;
 }
 
@@ -97,10 +100,14 @@ export class Chat implements OnInit {
     return items;
   });
 
+  private hasScrolledOnce = false;
+
   constructor() {
     afterRenderEffect(() => {
       this.messages();
-      this.bottomRef()?.nativeElement.scrollIntoView({ block: 'end' });
+      const behavior: ScrollBehavior = this.hasScrolledOnce ? 'smooth' : 'auto';
+      this.bottomRef()?.nativeElement.scrollIntoView({ block: 'end', behavior });
+      this.hasScrolledOnce = true;
     });
   }
 
@@ -140,17 +147,17 @@ export class Chat implements OnInit {
 
     this.chatApi.send(history, contentType).subscribe({
       next: (res) => {
-        this.messages.update((msgs) => [
-          ...msgs,
-          {
-            role: 'assistant',
-            content: res.reply,
-            sources: res.sources,
-            webResults: res.webResults,
-            created_at: new Date().toISOString(),
-          },
-        ]);
         this.loading.set(false);
+        const message: DisplayMessage = {
+          role: 'assistant',
+          content: '',
+          sources: res.sources,
+          webResults: res.webResults,
+          created_at: new Date().toISOString(),
+          streaming: true,
+        };
+        this.messages.update((msgs) => [...msgs, message]);
+        this.streamReply(message, res.reply);
       },
       error: () => {
         this.messages.update((msgs) => [
@@ -164,6 +171,26 @@ export class Chat implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  // Reveals the already-fetched reply word by word; real token streaming needs a backend SSE endpoint.
+  private streamReply(message: DisplayMessage, fullText: string): void {
+    const tokens = fullText.split(/(\s+)/);
+    let i = 0;
+
+    const reveal = () => {
+      if (i >= tokens.length) {
+        message.streaming = false;
+        this.messages.set([...this.messages()]);
+        return;
+      }
+      message.content += tokens[i];
+      i++;
+      this.messages.set([...this.messages()]);
+      setTimeout(reveal, STREAM_WORD_DELAY_MS);
+    };
+
+    reveal();
   }
 
   newSession(): void {

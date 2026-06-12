@@ -1,7 +1,12 @@
 .chat-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+  height: calc(100dvh - 48px);
+
+  @media (max-width: 768px) {
+    height: calc(100dvh - 88px - env(safe-area-inset-bottom));
+  }
 
   h1 {
     margin: 0;
@@ -15,6 +20,7 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .header-actions {
@@ -33,14 +39,40 @@
 }
 
 .chat-thread {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 300px;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .status-text {
   color: var(--app-text-secondary);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: auto 0;
+  padding: 40px 20px;
+  color: var(--app-text-secondary);
+  text-align: center;
+
+  .empty-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 56px;
+    color: var(--app-text-muted);
+  }
+
+  p {
+    margin: 0;
+  }
 }
 
 .date-divider {
@@ -116,14 +148,14 @@
   .message-bubble {
     background: var(--app-accent);
     color: var(--mat-sys-on-primary);
+    border-radius: var(--app-radius-lg) var(--app-radius-lg) 4px var(--app-radius-lg);
   }
 }
 
 .message-bubble {
   max-width: min(640px, 100%);
-  background: var(--app-surface);
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-md);
+  background: var(--app-surface-2);
+  border-radius: var(--app-radius-lg) var(--app-radius-lg) var(--app-radius-lg) 4px;
   box-shadow: var(--app-shadow-sm);
   padding: 12px 16px;
   display: flex;
@@ -135,6 +167,25 @@
   margin: 0;
   white-space: pre-wrap;
   line-height: 1.5;
+}
+
+.streaming-content::after {
+  content: '▌';
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--app-accent);
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .message-markdown {
@@ -154,16 +205,18 @@
 }
 
 .source-chip {
-  background: rgba(6, 182, 212, 0.12);
+  background: transparent;
   color: var(--app-accent);
-  border: 1px solid var(--app-border);
+  border: 1px solid rgba(6, 182, 212, 0.4);
   border-radius: 999px;
   padding: 2px 10px;
   font: inherit;
   font-size: 0.8rem;
   cursor: pointer;
+  transition: background var(--app-transition), border-color var(--app-transition);
 
   &:hover {
+    background: rgba(6, 182, 212, 0.08);
     border-color: var(--app-accent);
   }
 }
@@ -182,7 +235,7 @@
   padding: 8px 10px;
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
-  background: var(--app-surface-2);
+  background: var(--app-surface);
 }
 
 .web-result-title {
@@ -233,14 +286,98 @@
   }
 }
 
-.chat-input {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
+.typing-bubble {
+  padding: 10px 16px;
 }
 
-.chat-field {
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.typing-indicator .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--app-text-muted);
+  animation: typing-bounce 1.2s ease-in-out infinite;
+
+  &:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+}
+
+@keyframes typing-bounce {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+.chat-input-bar {
+  flex-shrink: 0;
+}
+
+.chat-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  padding: 4px 4px 4px 20px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--app-accent);
+    box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.2);
+  }
+}
+
+.chat-text-input {
   flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--app-text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  padding: 12px 0;
+  min-width: 0;
+
+  &::placeholder {
+    color: var(--app-text-muted);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.send-button {
+  flex-shrink: 0;
+  --mdc-icon-button-state-layer-size: 44px;
+  width: 44px;
+  height: 44px;
+  background: var(--app-accent);
+  color: var(--mat-sys-on-primary, #ffffff);
+  transition: opacity var(--app-transition);
+
+  &:disabled {
+    opacity: 0.4;
+  }
 }
 
 .input-hint {

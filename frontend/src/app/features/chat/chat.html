@@ -22,7 +22,14 @@
     @if (historyLoading()) {
       <p class="status-text">Loading conversation…</p>
     } @else if (messages().length === 0) {
-      <p class="status-text">Ask a question about your notes to get started.</p>
+      <div class="empty-state">
+        <mat-icon class="empty-icon">forum</mat-icon>
+        <p>Ask a question about your notes to get started.</p>
+        <p class="input-hint">
+          Tip: start a message with <code>search:</code> to force a web search, or it'll happen automatically
+          when your notes don't have a good answer.
+        </p>
+      </div>
     }
     @for (item of threadItems(); track $index) {
       @if (item.kind === 'date') {
@@ -36,61 +43,67 @@
         </button>
       } @else if (item.kind === 'session') {
         <div class="session-divider">
-          <span>New session started</span>
+          <span>New session</span>
         </div>
       } @else {
         <div class="message" [class.message-user]="item.message.role === 'user'">
           <div class="message-bubble">
             @if (item.message.role === 'assistant') {
-              <markdown class="message-content message-markdown" [data]="item.message.content"></markdown>
+              @if (item.message.streaming) {
+                <p class="message-content streaming-content">{{ item.message.content }}</p>
+              } @else {
+                <markdown class="message-content message-markdown" [data]="item.message.content"></markdown>
+              }
             } @else {
               <p class="message-content">{{ item.message.content }}</p>
             }
-            @if (item.message.sources && item.message.sources.length > 0) {
-              <div class="message-sources">
-                <span class="sources-label">Sources:</span>
-                @for (source of item.message.sources; track source.id) {
-                  <button class="source-chip" (click)="openSource(source.id)">{{ source.title }}</button>
-                }
-              </div>
-            }
-            @if (item.message.webResults && item.message.webResults.length > 0) {
-              <div class="web-results">
-                <span class="sources-label">From the web:</span>
-                @for (result of item.message.webResults; track result.url) {
-                  <div class="web-result">
-                    <a class="web-result-title" [href]="result.url" target="_blank" rel="noopener">{{ result.title }}</a>
-                    <p class="web-result-content">{{ result.content }}</p>
-                    <button
-                      mat-stroked-button
-                      class="save-result-button"
-                      [disabled]="result.saved"
-                      (click)="saveWebResult(result)"
-                    >
-                      <mat-icon>{{ result.saved ? 'check' : 'bookmark_add' }}</mat-icon>
-                      {{ result.saved ? 'Saved to notes' : 'Save to notes' }}
-                    </button>
-                  </div>
-                }
-              </div>
-            }
-            @if (item.message.role === 'assistant') {
-              <div class="generate-bar">
-                <button
-                  mat-stroked-button
-                  class="generate-button"
-                  [matMenuTriggerFor]="generateMenu"
-                  [disabled]="item.message.generating"
-                >
-                  <mat-icon>auto_awesome</mat-icon>
-                  {{ item.message.generating ? 'Generating…' : 'Generate' }}
-                </button>
-                <mat-menu #generateMenu="matMenu">
-                  @for (format of generateFormats; track format.value) {
-                    <button mat-menu-item (click)="generate(item.message, format.value)">{{ format.label }}</button>
+            @if (!item.message.streaming) {
+              @if (item.message.sources && item.message.sources.length > 0) {
+                <div class="message-sources">
+                  <span class="sources-label">Sources:</span>
+                  @for (source of item.message.sources; track source.id) {
+                    <button class="source-chip" (click)="openSource(source.id)">{{ source.title }}</button>
                   }
-                </mat-menu>
-              </div>
+                </div>
+              }
+              @if (item.message.webResults && item.message.webResults.length > 0) {
+                <div class="web-results">
+                  <span class="sources-label">From the web:</span>
+                  @for (result of item.message.webResults; track result.url) {
+                    <div class="web-result">
+                      <a class="web-result-title" [href]="result.url" target="_blank" rel="noopener">{{ result.title }}</a>
+                      <p class="web-result-content">{{ result.content }}</p>
+                      <button
+                        mat-stroked-button
+                        class="save-result-button"
+                        [disabled]="result.saved"
+                        (click)="saveWebResult(result)"
+                      >
+                        <mat-icon>{{ result.saved ? 'check' : 'bookmark_add' }}</mat-icon>
+                        {{ result.saved ? 'Saved to notes' : 'Save to notes' }}
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+              @if (item.message.role === 'assistant') {
+                <div class="generate-bar">
+                  <button
+                    mat-stroked-button
+                    class="generate-button"
+                    [matMenuTriggerFor]="generateMenu"
+                    [disabled]="item.message.generating"
+                  >
+                    <mat-icon>auto_awesome</mat-icon>
+                    {{ item.message.generating ? 'Generating…' : 'Generate' }}
+                  </button>
+                  <mat-menu #generateMenu="matMenu">
+                    @for (format of generateFormats; track format.value) {
+                      <button mat-menu-item (click)="generate(item.message, format.value)">{{ format.label }}</button>
+                    }
+                  </mat-menu>
+                </div>
+              }
             }
           </div>
         </div>
@@ -98,33 +111,32 @@
     }
     @if (loading()) {
       <div class="message">
-        <div class="message-bubble">
-          <p class="message-content status-text">Thinking…</p>
+        <div class="message-bubble typing-bubble">
+          <div class="typing-indicator">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
         </div>
       </div>
     }
     <div #bottom></div>
   </div>
 
-  <div class="chat-input">
-    <mat-form-field appearance="outline" class="chat-field">
-      <mat-label>Message</mat-label>
+  <div class="chat-input-bar">
+    <div class="chat-input">
       <input
-        matInput
+        class="chat-text-input"
+        type="text"
         [ngModel]="input()"
         (ngModelChange)="input.set($event)"
         (keyup.enter)="send()"
-        placeholder="Ask about your notes, or type 'search: ...' to search the web"
+        placeholder="Message your assistant…"
         [disabled]="loading()"
       />
-    </mat-form-field>
-    <button mat-flat-button color="primary" (click)="send()" [disabled]="loading() || !input().trim()">
-      <mat-icon>send</mat-icon>
-      Send
-    </button>
+      <button mat-icon-button class="send-button" (click)="send()" [disabled]="loading() || !input().trim()" aria-label="Send message">
+        <mat-icon>send</mat-icon>
+      </button>
+    </div>
   </div>
-  <p class="input-hint">
-    Tip: start a message with <code>search:</code> to force a web search, or it'll happen automatically when your
-    notes don't have a good answer.
-  </p>
 </div>
