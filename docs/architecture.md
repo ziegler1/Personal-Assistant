@@ -32,14 +32,24 @@ flowchart LR
 - **Angular 22**, standalone components, signals, `@angular/core/rxjs-interop`
   (`toSignal`), Angular Material (dark theme), `@angular/cdk/layout`
   (`BreakpointObserver`) for responsive layout.
-- **Layout shell** (`src/app/app.ts`, `layout/sidebar/`) - `mat-sidenav-container`
-  with a responsive sidenav (side mode on desktop, over mode + mobile toolbar
-  with hamburger on handset).
+- **Design tokens** (`src/styles.scss`) - brand overrides for Angular
+  Material's M3 system variables (dark navy + cyan, `--mat-sys-*`) plus a set
+  of app-wide `--app-*` tokens (`--app-bg`, `--app-surface`,
+  `--app-surface-2`, `--app-border`, `--app-accent`, `--app-shadow-md`, text
+  colors) used by non-Material elements across the app.
+- **Layout shell** (`src/app/app.ts`, `layout/sidebar/`,
+  `layout/bottom-nav/`) - `mat-sidenav-container` with a side-mode sidenav on
+  desktop; on handsets (`max-width: 767.98px` via `BreakpointObserver`) the
+  sidenav is hidden and a fixed `app-bottom-nav` tab bar (Home, Notes, Search,
+  Chat, Files) is shown instead. `App` tracks the previous top-level route
+  segment against a fixed `ROUTE_ORDER` to apply a forward/back/fade slide
+  transition class (`nav-forward` / `nav-back`) to `<main>` on navigation.
 - **Routing** (`src/app/app.routes.ts`) - lazy-loaded standalone feature
   components:
 
   | Path | Component |
   | --- | --- |
+  | `/` | Home - dashboard (quick search, recent notes, file/chat counts, FAB) |
   | `/notes` | Notes List - card grid, tag/content-type filters |
   | `/notes/new`, `/notes/:id` | Note Editor - create/edit form |
   | `/search` | Hybrid search with highlighted snippets |
@@ -47,7 +57,17 @@ flowchart LR
   | `/files` | Drag-and-drop file upload/list |
 
 - **Core services** (`src/app/core/services/`) - `NotesApi`, `FilesApi`,
-  `ChatApi`, calling same-origin `/api/*` endpoints.
+  `ChatApi`, calling same-origin `/api/*` endpoints, plus UI-utility services
+  `HapticService` (short `navigator.vibrate` tap) and `ToastService`
+  (Material snack-bar success/error toasts).
+- **Shared mobile-UX utilities** (`src/app/shared/`) - `PullToRefresh`
+  (touch-drag-to-refresh wrapper used by list views), `SkeletonList`
+  (loading-state placeholder rows/chat bubbles), `LongPressDirective`
+  (`appLongPress`, 500ms touch-hold), `NoteActionSheet` (Material bottom
+  sheet with edit/delete/share, opened via long-press or overflow menu),
+  `shareNote()` (Web Share API with clipboard-copy fallback + toast), and
+  `HapticDirective` (fires `HapticService.tap()` on click/press for
+  interactive elements).
 - **Dev proxy** (`frontend/proxy.conf.json`) - `ng serve` proxies `/api/*` to
   `http://localhost:3000` so the frontend can be developed against a local
   backend without CORS issues.
@@ -162,6 +182,10 @@ migration time per provider) - see [Plan / Next steps](plan.md).
 `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_ENDPOINT`). Uploaded files are
 stored under a generated `r2_key`, recorded in the `files` table (optionally
 linked to a `note_id`), and downloaded via presigned URLs.
+
+In the Files view, `FilePreviewDialog` opens a presigned URL directly in an
+`<img>`/`<iframe>` for images and PDFs; for other file types it shows the
+linked note's content instead.
 
 ## Deployment topology
 

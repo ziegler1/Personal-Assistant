@@ -12,11 +12,16 @@ cites your own notes as sources.
   semantic similarity for relevant results, complete with highlighted
   snippets.
 - **AI chat** - ask questions about your notes; the assistant retrieves
-  relevant notes and answers with citations.
+  relevant notes and answers with citations, with optional web search
+  fallback via Tavily.
 - **File storage** - drag-and-drop file uploads to Cloudflare R2, optionally
-  linked to a note.
+  linked to a note, with inline image/PDF previews.
 - **Pluggable AI providers** - switch between Claude (chat) + Cohere
   (embeddings), OpenAI, or a fully local Ollama setup via one env var.
+- **Mobile-friendly UI** - a Home dashboard (quick search, recent notes, FAB
+  for quick add), bottom tab navigation on handsets, pull-to-refresh,
+  long-press action sheets (edit/delete/share), skeleton loaders, haptic
+  feedback, and native share/clipboard for note links.
 
 ## Tech stack
 
@@ -42,9 +47,10 @@ cites your own notes as sources.
 │       └── services/      # notes, chat, R2 file storage
 ├── frontend/             # Angular 22 app (Material, dark theme)
 │   └── src/app/
-│       ├── core/          # API services + models
-│       ├── layout/        # Sidebar + app shell
-│       └── features/      # notes, search, chat, files views
+│       ├── core/          # API services + models, haptic/toast services
+│       ├── layout/        # Sidebar (desktop) + bottom nav (mobile) + app shell
+│       ├── shared/         # Pull-to-refresh, skeleton loaders, action sheets, etc.
+│       └── features/      # home, notes, search, chat, files views
 ├── docker/               # Dockerfiles + nginx reverse-proxy template
 ├── docker-compose.yml    # Postgres (pgvector) + Ollama + backend + frontend
 └── .env.example          # All environment variables, with defaults

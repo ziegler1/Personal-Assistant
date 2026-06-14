@@ -18,8 +18,18 @@ title: Plan
 - **Backend REST API** - notes CRUD, hybrid full-text + semantic search with
   highlighted snippets, file upload/download via R2, and RAG chat with cited
   sources.
-- **Angular UI** - a responsive Material shell (sidenav + mobile toolbar) and
-  five feature views: Notes List, Note Editor, Search, Chat, Files.
+- **Angular UI** - a responsive Material shell with a Home dashboard plus five
+  feature views (Notes List, Note Editor, Search, Chat, Files): side nav on
+  desktop, bottom tab nav on mobile.
+- **Mobile UI revamp** - an 8-phase pass over the whole frontend: shared
+  `--app-*` design tokens (`frontend/src/styles.scss`), a bottom nav +
+  slide transition shell for handsets, a new Home dashboard (quick search,
+  recent notes, file/chat counts, expandable FAB for quick add), and
+  mobile-polish utilities shared across views - `HapticService`,
+  `ToastService`, `PullToRefresh`, `SkeletonList`, `LongPressDirective`,
+  `NoteActionSheet` (bottom sheet for edit/delete/share), `shareNote()`
+  (Web Share API with clipboard fallback), and a `FilePreviewDialog` for
+  inline image/PDF/note previews in the Files view.
 - **Dockerized deployment** - multi-stage Dockerfiles for backend and
   frontend, a `docker-compose.yml` for local dev (Postgres + Ollama + backend
   + frontend), deployed to Railway for production.
@@ -55,5 +65,13 @@ title: Plan
   monitoring for the Railway services (currently diagnosed via raw deploy
   logs).
 - **Search/UX polish** - pagination and date-range filters for search and the
-  notes list; inline previews for image/PDF files in the Files view.
+  notes list (inline image/PDF previews in the Files view shipped in the
+  mobile UI revamp's Phase 7).
 - **Backups** - configure automated backups for the Railway Postgres volume.
+- **PWA polish** - the mobile UI revamp added app-like touches (haptics,
+  pull-to-refresh, bottom nav) but no web app manifest or service worker yet;
+  consider making the app installable/offline-capable.
+- **Smoke-test client-side export** - the Phase 7 generate/export flow
+  (pdfmake + mermaid PNG/PDF, share, email) type-checks and bundles but hasn't
+  been exercised end-to-end in a live browser (see
+  [decisions.md](decisions.md) #20).
