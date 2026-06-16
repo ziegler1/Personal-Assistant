@@ -6,7 +6,7 @@ export interface NoteActionSheetData {
   title: string;
 }
 
-export type NoteAction = 'edit' | 'delete' | 'share';
+export type NoteAction = 'edit' | 'delete' | 'share' | 'download' | 'email';
 
 @Component({
   selector: 'app-note-action-sheet',

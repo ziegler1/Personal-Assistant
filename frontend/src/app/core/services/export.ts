@@ -10,7 +10,15 @@ export class ExportApi {
     return this.http.post<{ url: string }>('/api/export/share', { filename, mimeType, data });
   }
 
-  email(filename: string, mimeType: string, data: string, subject: string): Observable<{ ok: boolean }> {
-    return this.http.post<{ ok: boolean }>('/api/export/email', { filename, mimeType, data, subject });
+  email(filename: string, mimeType: string, data: string, subject: string, to?: string): Observable<{ ok: boolean }> {
+    return this.http.post<{ ok: boolean }>('/api/export/email', { filename, mimeType, data, subject, to });
+  }
+
+  emailText(subject: string, text: string, to?: string): Observable<{ ok: boolean }> {
+    return this.http.post<{ ok: boolean }>('/api/export/email', { subject, text, to });
+  }
+
+  emailLink(fileId: string, to?: string): Observable<{ ok: boolean }> {
+    return this.http.post<{ ok: boolean }>('/api/export/email-link', { fileId, to });
   }
 }

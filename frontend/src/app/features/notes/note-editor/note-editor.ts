@@ -13,6 +13,7 @@ import { TextFieldModule } from '@angular/cdk/text-field';
 import { MarkdownModule } from 'ngx-markdown';
 import { NotesApi } from '../../../core/services/notes';
 import { CategoriesApi } from '../../../core/services/categories';
+import { ExportApi } from '../../../core/services/export';
 import { ToastService } from '../../../core/services/toast';
 import { CATEGORIES, CONTENT_TYPES, CategoryEntry, ContentType, Note, NoteFile, SUBCATEGORIES } from '../../../core/models/note.model';
 import { HapticDirective } from '../../../shared/haptic.directive';
@@ -49,6 +50,7 @@ interface NoteFormSnapshot {
 export class NoteEditor implements OnInit {
   private notesApi = inject(NotesApi);
   private categoriesApi = inject(CategoriesApi);
+  private exportApi = inject(ExportApi);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
@@ -326,6 +328,27 @@ export class NoteEditor implements OnInit {
     this.addingCategory.set(false);
     this.addingSubcategory.set(false);
     this.mode.set('view');
+  }
+
+  downloadAsMarkdown(): void {
+    const filename = `${this.title().replace(/[/\\?%*:|"<>]/g, '-') || 'note'}.md`;
+    const blob = new Blob([`# ${this.title()}\n\n${this.content()}`], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  emailNote(): void {
+    const to = window.prompt('Send to email address:');
+    if (to === null) return;
+    const text = `# ${this.title()}\n\n${this.content()}`;
+    this.exportApi.emailText(this.title(), text, to || undefined).subscribe({
+      next: () => this.toast.success('Note emailed'),
+      error: (err) => this.toast.error(err?.error?.error || 'Failed to send email. Check SMTP configuration.'),
+    });
   }
 
   backToList(): void {

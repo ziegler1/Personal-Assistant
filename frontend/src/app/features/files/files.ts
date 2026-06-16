@@ -8,6 +8,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { FilesApi } from '../../core/services/files';
 import { CategoriesApi } from '../../core/services/categories';
+import { ExportApi } from '../../core/services/export';
 import { ToastService } from '../../core/services/toast';
 import { CATEGORIES, CategoryEntry, NoteFile, SUBCATEGORIES } from '../../core/models/note.model';
 import { FilePreviewDialog } from './file-preview-dialog/file-preview-dialog';
@@ -36,6 +37,7 @@ interface UploadItem {
 export class Files implements OnInit {
   private filesApi = inject(FilesApi);
   private categoriesApi = inject(CategoriesApi);
+  private exportApi = inject(ExportApi);
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
 
@@ -106,6 +108,15 @@ export class Files implements OnInit {
   download(file: NoteFile): void {
     this.filesApi.getDownloadUrl(file.id).subscribe((res) => {
       window.open(res.url, '_blank');
+    });
+  }
+
+  emailFile(file: NoteFile): void {
+    const to = window.prompt('Send download link to email address:');
+    if (to === null) return;
+    this.exportApi.emailLink(file.id, to || undefined).subscribe({
+      next: () => this.toast.success('Download link emailed'),
+      error: (err) => this.toast.error(err?.error?.error || 'Failed to send email. Check SMTP configuration.'),
     });
   }
 

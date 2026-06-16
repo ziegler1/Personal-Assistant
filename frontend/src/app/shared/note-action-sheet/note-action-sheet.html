@@ -4,9 +4,17 @@
     <mat-icon>edit</mat-icon>
     Edit
   </button>
+  <button class="action-item" (click)="select('download')">
+    <mat-icon>download</mat-icon>
+    Download .md
+  </button>
+  <button class="action-item" (click)="select('email')">
+    <mat-icon>email</mat-icon>
+    Email…
+  </button>
   <button class="action-item" (click)="select('share')">
     <mat-icon>share</mat-icon>
-    Share
+    Share link
   </button>
   <button class="action-item action-item-danger" (click)="select('delete')">
     <mat-icon>delete</mat-icon>

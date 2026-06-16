@@ -21,19 +21,29 @@ function getTransporter(): Transporter {
   return transporter;
 }
 
-export async function sendExportEmail(subject: string, text: string, attachment: EmailAttachment): Promise<void> {
-  if (!config.smtp.host || !config.notifyEmail) {
+export async function sendExportEmail(
+  subject: string,
+  text: string,
+  attachment: EmailAttachment | null,
+  to?: string
+): Promise<void> {
+  const recipient = to || config.notifyEmail;
+  if (!config.smtp.host || !recipient) {
     throw Object.assign(
-      new Error('Email export is not configured. Set SMTP_HOST, SMTP_* credentials, and NOTIFY_EMAIL.'),
+      new Error('Email is not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASS, SMTP_FROM, and NOTIFY_EMAIL in the server environment.'),
       { status: 503 }
     );
   }
 
-  await getTransporter().sendMail({
+  const mailOptions: Parameters<ReturnType<typeof getTransporter>['sendMail']>[0] = {
     from: config.smtp.from || config.smtp.user,
-    to: config.notifyEmail,
+    to: recipient,
     subject,
     text,
-    attachments: [attachment],
-  });
+  };
+  if (attachment) {
+    mailOptions.attachments = [attachment];
+  }
+
+  await getTransporter().sendMail(mailOptions);
 }

@@ -33,16 +33,39 @@ router.post('/share', async (req, res, next) => {
 
 router.post('/email', async (req, res, next) => {
   try {
-    const { filename, mimeType, data, subject, text } = req.body ?? {};
-    if (!filename || !mimeType || !data || !subject) {
-      return res
-        .status(400)
-        .json({ error: 'Request body must include "filename", "mimeType", "data" (base64), and "subject"' });
+    const { filename, mimeType, data, subject, text, to } = req.body ?? {};
+    if (!subject) {
+      return res.status(400).json({ error: 'Request body must include "subject"' });
     }
 
-    const buffer = Buffer.from(data, 'base64');
-    await emailService.sendExportEmail(subject, text || '', { filename, content: buffer, contentType: mimeType });
+    const attachment =
+      data && filename && mimeType
+        ? { filename, content: Buffer.from(data, 'base64'), contentType: mimeType }
+        : null;
 
+    await emailService.sendExportEmail(subject, text || '', attachment, to || undefined);
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/email-link', async (req, res, next) => {
+  try {
+    const { fileId, to, subject } = req.body ?? {};
+    if (!fileId) return res.status(400).json({ error: 'fileId is required' });
+
+    const { rows } = await pool.query<{ r2_key: string; filename: string }>(
+      'SELECT r2_key, filename FROM files WHERE id = $1',
+      [fileId]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'File not found' });
+
+    const url = await r2.getDownloadUrl(rows[0].r2_key, SHARE_LINK_EXPIRY_SECONDS);
+    const emailSubject = subject || `File: ${rows[0].filename}`;
+    const body = `Download link for "${rows[0].filename}" (valid for 7 days):\n\n${url}`;
+
+    await emailService.sendExportEmail(emailSubject, body, null, to || undefined);
     res.json({ ok: true });
   } catch (err) {
     next(err);

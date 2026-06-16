@@ -158,21 +158,24 @@ export class GeneratedOutputDialog implements OnInit {
     }
   }
 
-  async emailToSelf(): Promise<void> {
+  async emailTo(): Promise<void> {
+    const to = window.prompt('Send to email address:');
+    if (to === null) return;
+
     this.busy.set(true);
     this.status.set('');
     try {
       const diagramImage = this.isDiagram ? await this.getDiagramPng() : undefined;
       const pdf = await createGeneratedPdf(this.output, diagramImage);
       const base64 = await pdf.getBase64();
-      this.exportApi.email(`${this.output.title}.pdf`, 'application/pdf', base64, this.output.title).subscribe({
+      this.exportApi.email(`${this.output.title}.pdf`, 'application/pdf', base64, this.output.title, to || undefined).subscribe({
         next: () => {
           this.busy.set(false);
-          this.status.set('Emailed to your inbox.');
+          this.status.set('Emailed successfully.');
         },
-        error: () => {
+        error: (err) => {
           this.busy.set(false);
-          this.status.set('Failed to send email.');
+          this.status.set(err?.error?.error || 'Failed to send email. Check SMTP configuration in server settings.');
         },
       });
     } catch {

@@ -7,6 +7,7 @@ export interface NoteFilters {
   tag?: string;
   contentType?: ContentType;
   category?: string;
+  subcategory?: string;
 }
 
 export interface CreateNoteInput {
@@ -61,6 +62,7 @@ export class NotesApi {
     if (filters.tag) params = params.set('tag', filters.tag);
     if (filters.contentType) params = params.set('content_type', filters.contentType);
     if (filters.category) params = params.set('category', filters.category);
+    if (filters.subcategory) params = params.set('subcategory', filters.subcategory);
     return params;
   }
 }

@@ -28,6 +28,7 @@ export interface ListNotesFilter {
   tag?: string;
   contentType?: ContentType;
   category?: string;
+  subcategory?: string;
 }
 
 export interface SearchNotesOptions extends ListNotesFilter {
@@ -78,6 +79,10 @@ export async function listNotes(filter: ListNotesFilter = {}): Promise<Note[]> {
   if (filter.category) {
     params.push(filter.category);
     conditions.push(`category = $${params.length}`);
+  }
+  if (filter.subcategory) {
+    params.push(filter.subcategory);
+    conditions.push(`subcategory = $${params.length}`);
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -182,6 +187,10 @@ export async function searchNotes(query: string, opts: SearchNotesOptions = {}):
   if (opts.category) {
     params.push(opts.category);
     conditions.push(`category = $${params.length}`);
+  }
+  if (opts.subcategory) {
+    params.push(opts.subcategory);
+    conditions.push(`subcategory = $${params.length}`);
   }
   const extraWhere = conditions.length ? `AND ${conditions.join(' AND ')}` : '';
 

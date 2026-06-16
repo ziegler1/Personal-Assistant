@@ -7,6 +7,12 @@
         <mat-icon>arrow_back</mat-icon>
       </button>
       <div class="header-actions">
+        <button mat-icon-button (click)="downloadAsMarkdown()" aria-label="Download as Markdown" title="Download .md">
+          <mat-icon>download</mat-icon>
+        </button>
+        <button mat-icon-button (click)="emailNote()" aria-label="Email note" title="Email…">
+          <mat-icon>email</mat-icon>
+        </button>
         <button mat-icon-button class="danger-icon-btn" appHaptic (click)="delete()" aria-label="Delete note">
           <mat-icon>delete</mat-icon>
         </button>

@@ -27,6 +27,27 @@
       }
     </div>
 
+    @if (filterState.category() && subcategoryOptions().length > 0) {
+      <div class="type-filter-row">
+        <button
+          class="filter-chip"
+          [class.active]="!filterState.subcategory()"
+          (click)="selectSubcategory('')"
+        >
+          All
+        </button>
+        @for (sub of subcategoryOptions(); track sub) {
+          <button
+            class="filter-chip"
+            [class.active]="filterState.subcategory() === sub"
+            (click)="selectSubcategory(sub)"
+          >
+            {{ sub }}
+          </button>
+        }
+      </div>
+    }
+
     <div class="type-filter-row">
       @for (type of contentTypes; track type) {
         <button
