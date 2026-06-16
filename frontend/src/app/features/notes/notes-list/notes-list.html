@@ -169,10 +169,13 @@
                     class="sub-browse-chip"
                     (click)="selectSubcategoryFromBrowse(selCat.name, sub.name)"
                   >
-                    {{ sub.name }}
-                    @if (sub.note_count !== undefined) {
-                      <span class="sub-chip-count">{{ sub.note_count }}</span>
-                    }
+                    <span class="sub-chip-name">{{ sub.name }}</span>
+                    <span class="sub-chip-right">
+                      @if (sub.note_count !== undefined) {
+                        <span class="sub-chip-count">{{ sub.note_count === 1 ? '1 note' : (sub.note_count) + ' notes' }}</span>
+                      }
+                      <span class="sub-chip-chevron">›</span>
+                    </span>
                   </button>
                   @if (browseEditMode()) {
                     <div class="sub-chip-edit" (click)="$event.stopPropagation()">
