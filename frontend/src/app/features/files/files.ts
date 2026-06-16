@@ -10,7 +10,7 @@ import { FilesApi } from '../../core/services/files';
 import { CategoriesApi } from '../../core/services/categories';
 import { ExportApi } from '../../core/services/export';
 import { ToastService } from '../../core/services/toast';
-import { CATEGORIES, CategoryEntry, NoteFile, SUBCATEGORIES } from '../../core/models/note.model';
+import { CATEGORIES, CATEGORY_ICONS, CategoryEntry, NoteFile, SUBCATEGORIES } from '../../core/models/note.model';
 import { FilePreviewDialog } from './file-preview-dialog/file-preview-dialog';
 import { SkeletonList } from '../../shared/skeleton-list/skeleton-list';
 import { PullToRefresh } from '../../shared/pull-to-refresh/pull-to-refresh';
@@ -44,7 +44,12 @@ export class Files implements OnInit {
   protected readonly acceptAttr = ACCEPTED_EXTENSIONS.join(',');
   protected readonly files = signal<NoteFile[]>([]);
   protected readonly loadedCategories = signal<CategoryEntry[]>(
-    CATEGORIES.map((name) => ({ name, subcategories: [...(SUBCATEGORIES[name] as string[])] }))
+    CATEGORIES.map((name) => ({
+      id: '',
+      name,
+      icon: CATEGORY_ICONS[name] || '📁',
+      subcategories: (SUBCATEGORIES[name] as string[]).map((s) => ({ id: '', name: s })),
+    }))
   );
   protected readonly loading = signal(false);
   protected readonly uploading = signal(false);
@@ -136,7 +141,7 @@ export class Files implements OnInit {
   }
 
   subcategoriesFor(category: string): string[] {
-    return this.loadedCategories().find((c) => c.name === category)?.subcategories ?? [];
+    return this.loadedCategories().find((c) => c.name === category)?.subcategories.map((s) => s.name) ?? [];
   }
 
   onFileCategoryChange(file: NoteFile, category: string): void {

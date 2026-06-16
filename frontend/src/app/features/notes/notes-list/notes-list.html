@@ -2,107 +2,323 @@
   <app-pull-to-refresh [refreshing]="loading()" (refresh)="load()">
     <div class="page-header">
       <h1>Notes</h1>
-      <button mat-flat-button color="primary" (click)="newNote()">
-        <mat-icon>add</mat-icon>
-        New Note
-      </button>
-    </div>
-
-    <div class="type-filter-row">
-      <button
-        class="filter-chip"
-        [class.active]="!filterState.category()"
-        (click)="selectCategory('')"
-      >
-        All
-      </button>
-      @for (cat of loadedCategoryNames(); track cat) {
-        <button
-          class="filter-chip category-chip"
-          [class.active]="filterState.category() === cat"
-          (click)="selectCategory(cat)"
-        >
-          {{ cat }}
-        </button>
-      }
-    </div>
-
-    @if (filterState.category() && subcategoryOptions().length > 0) {
-      <div class="type-filter-row">
-        <button
-          class="filter-chip"
-          [class.active]="!filterState.subcategory()"
-          (click)="selectSubcategory('')"
-        >
-          All
-        </button>
-        @for (sub of subcategoryOptions(); track sub) {
+      <div class="header-actions">
+        @if (viewMode() === 'browse') {
           <button
-            class="filter-chip"
-            [class.active]="filterState.subcategory() === sub"
-            (click)="selectSubcategory(sub)"
+            mat-icon-button
+            [class.browse-edit-active]="browseEditMode()"
+            (click)="toggleBrowseEditMode()"
+            title="Edit categories"
+            aria-label="Edit categories"
           >
-            {{ sub }}
+            <mat-icon>edit</mat-icon>
           </button>
         }
+        <button
+          mat-icon-button
+          (click)="toggleViewMode()"
+          [title]="viewMode() === 'list' ? 'Browse by category' : 'List view'"
+          aria-label="Toggle view mode"
+        >
+          <mat-icon>{{ viewMode() === 'list' ? 'grid_view' : 'view_list' }}</mat-icon>
+        </button>
+        <button mat-flat-button color="primary" (click)="newNote()">
+          <mat-icon>add</mat-icon>
+          New Note
+        </button>
       </div>
+    </div>
+
+    <!-- ── BROWSE MODE ───────────────────────────────────────────────────── -->
+    @if (viewMode() === 'browse') {
+      <div class="category-grid">
+        @for (cat of loadedCategories(); track cat.id) {
+          @if (editingCategoryId() === cat.id) {
+            <!-- Edit card -->
+            <div class="category-card cat-editing">
+              <div class="icon-picker">
+                @for (icon of presetIcons; track icon) {
+                  <button
+                    type="button"
+                    class="icon-opt"
+                    [class.icon-opt-selected]="editCatIcon() === icon"
+                    (click)="editCatIcon.set(icon)"
+                  >{{ icon }}</button>
+                }
+              </div>
+              <input
+                #editCatNameInput
+                class="cat-name-input"
+                [value]="editCatName()"
+                (input)="editCatName.set($any($event.target).value)"
+                placeholder="CATEGORY NAME"
+                (keydown.enter)="saveCategoryEdit(cat)"
+                (keydown.escape)="editingCategoryId.set(null)"
+              />
+              <div class="card-confirm-row">
+                <button mat-icon-button class="confirm-btn" (click)="saveCategoryEdit(cat)" title="Save">
+                  <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button (click)="editingCategoryId.set(null)" title="Cancel">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+          } @else {
+            <button
+              type="button"
+              class="category-card"
+              [class.cat-selected]="browseSelectedCategory() === cat.name"
+              (click)="toggleBrowseCategory(cat.name)"
+            >
+              <span class="cat-icon">{{ cat.icon }}</span>
+              <span class="cat-name">{{ cat.name }}</span>
+              <span class="cat-count">{{ cat.note_count ?? 0 }} notes</span>
+              @if (browseEditMode()) {
+                <div class="cat-edit-overlay" (click)="$event.stopPropagation()">
+                  <button
+                    mat-icon-button
+                    class="cat-action-edit"
+                    (click)="startEditCategory(cat)"
+                    title="Edit"
+                  >
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    class="cat-action-delete"
+                    (click)="deleteCategory(cat)"
+                    title="Delete"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              }
+            </button>
+          }
+        }
+
+        @if (browseEditMode()) {
+          @if (addingBrowseCategory()) {
+            <div class="category-card cat-editing">
+              <div class="icon-picker">
+                @for (icon of presetIcons; track icon) {
+                  <button
+                    type="button"
+                    class="icon-opt"
+                    [class.icon-opt-selected]="newBrowseCatIcon() === icon"
+                    (click)="newBrowseCatIcon.set(icon)"
+                  >{{ icon }}</button>
+                }
+              </div>
+              <input
+                #newBrowseCatInput
+                class="cat-name-input"
+                [value]="newBrowseCatName()"
+                (input)="newBrowseCatName.set($any($event.target).value)"
+                placeholder="CATEGORY NAME"
+                (keydown.enter)="createBrowseCategory()"
+                (keydown.escape)="addingBrowseCategory.set(false)"
+              />
+              <div class="card-confirm-row">
+                <button mat-icon-button class="confirm-btn" (click)="createBrowseCategory()" title="Create">
+                  <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button (click)="addingBrowseCategory.set(false)" title="Cancel">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+          } @else {
+            <button type="button" class="category-card add-cat-card" (click)="startAddBrowseCategory()">
+              <mat-icon class="add-cat-icon">add</mat-icon>
+              <span class="cat-name">Add Category</span>
+            </button>
+          }
+        }
+      </div>
+
+      <!-- Subcategory panel -->
+      @if (browseSelectedCategoryEntry(); as selCat) {
+        <div class="subcategory-browse-panel">
+          <div class="subcategory-browse-header">
+            <span class="subcategory-browse-title">{{ selCat.icon }} {{ selCat.name }}</span>
+          </div>
+          <div class="subcategory-browse-chips">
+            @for (sub of selCat.subcategories; track sub.id) {
+              @if (editingSubcategoryId() === sub.id) {
+                <div class="sub-edit-wrap">
+                  <input
+                    #editSubNameInput
+                    class="sub-edit-input"
+                    [value]="editSubName()"
+                    (input)="editSubName.set($any($event.target).value)"
+                    (keydown.enter)="saveSubcategoryEdit(sub, selCat)"
+                    (keydown.escape)="editingSubcategoryId.set(null)"
+                  />
+                  <button mat-icon-button class="confirm-btn" (click)="saveSubcategoryEdit(sub, selCat)" title="Save">
+                    <mat-icon>check</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="editingSubcategoryId.set(null)" title="Cancel">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              } @else {
+                <div class="sub-chip-wrap">
+                  <button
+                    class="sub-browse-chip"
+                    (click)="selectSubcategoryFromBrowse(selCat.name, sub.name)"
+                  >
+                    {{ sub.name }}
+                    @if (sub.note_count !== undefined) {
+                      <span class="sub-chip-count">{{ sub.note_count }}</span>
+                    }
+                  </button>
+                  @if (browseEditMode()) {
+                    <div class="sub-chip-edit" (click)="$event.stopPropagation()">
+                      <button
+                        mat-icon-button
+                        class="sub-action-edit"
+                        (click)="startEditSubcategory(sub)"
+                        title="Edit"
+                      >
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button
+                        mat-icon-button
+                        class="sub-action-delete"
+                        (click)="deleteSubcategory(sub, selCat)"
+                        title="Delete"
+                      >
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            }
+
+            @if (browseEditMode()) {
+              @if (addingBrowseSub()) {
+                <div class="sub-add-wrap">
+                  <input
+                    #newBrowseSubInput
+                    class="sub-add-input"
+                    [value]="newBrowseSubName()"
+                    (input)="newBrowseSubName.set($any($event.target).value)"
+                    placeholder="New subcategory…"
+                    (keydown.enter)="createBrowseSubcategory(selCat)"
+                    (keydown.escape)="addingBrowseSub.set(false)"
+                  />
+                  <button mat-icon-button class="confirm-btn" (click)="createBrowseSubcategory(selCat)" title="Create">
+                    <mat-icon>check</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="addingBrowseSub.set(false)" title="Cancel">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              } @else {
+                <button class="sub-browse-chip sub-add-chip" (click)="startAddBrowseSubcategory()">
+                  <mat-icon>add</mat-icon>
+                  Add Subcategory
+                </button>
+              }
+            }
+          </div>
+        </div>
+      }
     }
 
-    <div class="type-filter-row">
-      @for (type of contentTypes; track type) {
-        <button
-          class="filter-chip"
-          [class.active]="filterState.contentType() === type"
-          (click)="selectType(type)"
-        >
-          {{ type === '' ? 'All' : type }}
+    <!-- ── LIST MODE ─────────────────────────────────────────────────────── -->
+    @if (viewMode() === 'list') {
+      <div class="type-filter-row">
+        <button class="filter-chip" [class.active]="!filterState.category()" (click)="selectCategory('')">
+          All
         </button>
-      }
-    </div>
-
-    <mat-form-field appearance="outline" class="tag-filter-field">
-      <mat-label>Filter by tag</mat-label>
-      <input
-        matInput
-        [ngModel]="filterState.tag()"
-        (ngModelChange)="onTagInput($event)"
-        placeholder="Start typing to filter…"
-      />
-      @if (filterState.tag()) {
-        <button matSuffix mat-icon-button (click)="onTagInput('')" aria-label="Clear tag filter">
-          <mat-icon>close</mat-icon>
-        </button>
-      }
-    </mat-form-field>
-
-    @if (loading()) {
-      <app-skeleton-list [rows]="5" />
-    } @else if (notes().length === 0) {
-      @if (hasActiveFilters()) {
-        <div class="empty-state">
-          <mat-icon class="empty-icon">search_off</mat-icon>
-          <p>No notes match these filters</p>
-        </div>
-      } @else {
-        <div class="empty-state">
-          <mat-icon class="empty-icon">description</mat-icon>
-          <p>No notes yet — tap + to add your first</p>
-          <button mat-fab color="primary" (click)="newNote()" aria-label="New note">
-            <mat-icon>add</mat-icon>
+        @for (cat of loadedCategoryNames(); track cat) {
+          <button
+            class="filter-chip category-chip"
+            [class.active]="filterState.category() === cat"
+            (click)="selectCategory(cat)"
+          >
+            {{ cat }}
           </button>
-        </div>
-      }
-    } @else {
-      <div class="notes-list">
-        @for (note of notes(); track note.id) {
-          <app-note-row
-            [note]="note"
-            (open)="openNote(note.id)"
-            (delete)="deleteNote(note.id)"
-            (longPress)="openActionSheet(note)"
-          />
         }
       </div>
+
+      @if (filterState.category() && subcategoryOptions().length > 0) {
+        <div class="type-filter-row">
+          <button class="filter-chip" [class.active]="!filterState.subcategory()" (click)="selectSubcategory('')">
+            All
+          </button>
+          @for (sub of subcategoryOptions(); track sub) {
+            <button
+              class="filter-chip"
+              [class.active]="filterState.subcategory() === sub"
+              (click)="selectSubcategory(sub)"
+            >
+              {{ sub }}
+            </button>
+          }
+        </div>
+      }
+
+      <div class="type-filter-row">
+        @for (type of contentTypes; track type) {
+          <button
+            class="filter-chip"
+            [class.active]="filterState.contentType() === type"
+            (click)="selectType(type)"
+          >
+            {{ type === '' ? 'All' : type }}
+          </button>
+        }
+      </div>
+
+      <mat-form-field appearance="outline" class="tag-filter-field">
+        <mat-label>Filter by tag</mat-label>
+        <input
+          matInput
+          [ngModel]="filterState.tag()"
+          (ngModelChange)="onTagInput($event)"
+          placeholder="Start typing to filter…"
+        />
+        @if (filterState.tag()) {
+          <button matSuffix mat-icon-button (click)="onTagInput('')" aria-label="Clear tag filter">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </mat-form-field>
+
+      @if (loading()) {
+        <app-skeleton-list [rows]="5" />
+      } @else if (notes().length === 0) {
+        @if (hasActiveFilters()) {
+          <div class="empty-state">
+            <mat-icon class="empty-icon">search_off</mat-icon>
+            <p>No notes match these filters</p>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <mat-icon class="empty-icon">description</mat-icon>
+            <p>No notes yet — tap + to add your first</p>
+            <button mat-fab color="primary" (click)="newNote()" aria-label="New note">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+        }
+      } @else {
+        <div class="notes-list">
+          @for (note of notes(); track note.id) {
+            <app-note-row
+              [note]="note"
+              (open)="openNote(note.id)"
+              (delete)="deleteNote(note.id)"
+              (longPress)="openActionSheet(note)"
+            />
+          }
+        </div>
+      }
     }
   </app-pull-to-refresh>
 </div>

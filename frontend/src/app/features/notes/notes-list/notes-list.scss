@@ -17,6 +17,18 @@
   }
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.browse-edit-active {
+  color: var(--app-accent);
+}
+
+// ── List mode filters ──────────────────────────────────────────────────────
+
 .type-filter-row {
   display: flex;
   gap: 8px;
@@ -94,5 +106,311 @@
 
   p {
     margin: 0;
+  }
+}
+
+// ── Browse mode – category grid ────────────────────────────────────────────
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 380px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.category-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 20px 12px;
+  border-radius: var(--app-radius-md, 10px);
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  min-height: 100px;
+  font-family: inherit;
+
+  &:hover {
+    border-color: var(--app-accent);
+    transform: translateY(-1px);
+  }
+
+  &.cat-selected {
+    border-color: var(--app-accent);
+    background: rgba(6, 182, 212, 0.08);
+  }
+
+  &.add-cat-card {
+    border-style: dashed;
+    color: var(--app-text-muted);
+
+    &:hover {
+      color: var(--app-accent);
+    }
+  }
+
+  &.cat-editing {
+    cursor: default;
+    align-items: stretch;
+    padding: 12px;
+    gap: 10px;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+.cat-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.cat-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--app-text-primary);
+  word-break: break-word;
+}
+
+.cat-count {
+  font-size: 0.72rem;
+  color: var(--app-text-muted);
+}
+
+.add-cat-icon {
+  font-size: 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+// Edit overlay shown on hover in edit mode
+.cat-edit-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+
+  .category-card:hover & {
+    opacity: 1;
+  }
+}
+
+.cat-action-edit {
+  color: var(--app-accent) !important;
+}
+
+.cat-action-delete {
+  color: var(--app-danger, #ef4444) !important;
+}
+
+// Edit card elements
+.icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.icon-opt {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.1s, background 0.1s;
+
+  &:hover {
+    background: var(--app-surface-2);
+  }
+
+  &.icon-opt-selected {
+    border-color: var(--app-accent);
+    background: rgba(6, 182, 212, 0.12);
+  }
+}
+
+.cat-name-input {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--app-accent);
+  background: var(--app-surface);
+  color: var(--app-text-primary);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  outline: none;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: var(--app-text-muted);
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+}
+
+.card-confirm-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.confirm-btn {
+  color: var(--app-accent) !important;
+}
+
+// ── Browse mode – subcategory panel ───────────────────────────────────────
+
+.subcategory-browse-panel {
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md, 10px);
+  background: var(--app-surface);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subcategory-browse-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.subcategory-browse-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--app-text-secondary);
+}
+
+.subcategory-browse-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.sub-chip-wrap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sub-browse-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface-2, var(--app-surface));
+  color: var(--app-text-primary);
+  font-family: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: var(--app-accent);
+    background: rgba(6, 182, 212, 0.06);
+  }
+
+  &.sub-add-chip {
+    border-style: dashed;
+    color: var(--app-text-muted);
+
+    &:hover {
+      color: var(--app-accent);
+    }
+
+    mat-icon {
+      font-size: 1rem;
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+}
+
+.sub-chip-count {
+  background: var(--app-accent);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  min-width: 18px;
+  text-align: center;
+}
+
+.sub-chip-edit {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.sub-action-edit {
+  color: var(--app-accent) !important;
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 0.9rem !important;
+}
+
+.sub-action-delete {
+  color: var(--app-danger, #ef4444) !important;
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 0.9rem !important;
+}
+
+.sub-edit-wrap,
+.sub-add-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sub-edit-input,
+.sub-add-input {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--app-accent);
+  background: var(--app-surface);
+  color: var(--app-text-primary);
+  font-family: inherit;
+  font-size: 0.82rem;
+  outline: none;
+  width: 180px;
+
+  &::placeholder {
+    color: var(--app-text-muted);
   }
 }

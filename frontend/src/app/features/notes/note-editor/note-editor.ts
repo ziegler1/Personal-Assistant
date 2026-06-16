@@ -15,7 +15,7 @@ import { NotesApi } from '../../../core/services/notes';
 import { CategoriesApi } from '../../../core/services/categories';
 import { ExportApi } from '../../../core/services/export';
 import { ToastService } from '../../../core/services/toast';
-import { CATEGORIES, CONTENT_TYPES, CategoryEntry, ContentType, Note, NoteFile, SUBCATEGORIES } from '../../../core/models/note.model';
+import { CATEGORIES, CATEGORY_ICONS, CONTENT_TYPES, CategoryEntry, ContentType, Note, NoteFile, SUBCATEGORIES } from '../../../core/models/note.model';
 import { HapticDirective } from '../../../shared/haptic.directive';
 
 interface NoteFormSnapshot {
@@ -69,10 +69,10 @@ export class NoteEditor implements OnInit {
   protected readonly category = signal<string | null>(null);
   protected readonly subcategory = signal<string | null>(null);
   protected readonly loadedCategories = signal<CategoryEntry[]>([]);
-  protected readonly subcategoriesForCategory = computed(() => {
+  protected readonly subcategoriesForCategory = computed((): string[] => {
     const cat = this.category();
     if (!cat) return [];
-    return this.loadedCategories().find((c) => c.name === cat)?.subcategories ?? [];
+    return this.loadedCategories().find((c) => c.name === cat)?.subcategories.map((s) => s.name) ?? [];
   });
 
   // Inline create state
@@ -140,7 +140,12 @@ export class NoteEditor implements OnInit {
       next: (res) => this.loadedCategories.set(res.categories),
       error: () =>
         this.loadedCategories.set(
-          CATEGORIES.map((name) => ({ name, subcategories: [...(SUBCATEGORIES[name] as string[])] }))
+          CATEGORIES.map((name) => ({
+            id: '',
+            name,
+            icon: CATEGORY_ICONS[name] || '📁',
+            subcategories: (SUBCATEGORIES[name] as string[]).map((s) => ({ id: '', name: s })),
+          }))
         ),
     });
   }
@@ -191,7 +196,10 @@ export class NoteEditor implements OnInit {
     this.categoriesApi.create(name).subscribe({
       next: (res) => {
         if (!this.loadedCategories().find((c) => c.name === res.name)) {
-          this.loadedCategories.update((cats) => [...cats, { name: res.name, subcategories: [] }]);
+          this.loadedCategories.update((cats) => [
+            ...cats,
+            { id: res.id, name: res.name, icon: res.icon, subcategories: [] },
+          ]);
         }
         this.category.set(res.name);
         this.subcategory.set(null);
@@ -218,8 +226,8 @@ export class NoteEditor implements OnInit {
       next: (res) => {
         this.loadedCategories.update((cats) =>
           cats.map((c) =>
-            c.name === cat && !c.subcategories.includes(res.name)
-              ? { ...c, subcategories: [...c.subcategories, res.name] }
+            c.name === cat && !c.subcategories.find((s) => s.name === res.name)
+              ? { ...c, subcategories: [...c.subcategories, { id: res.id, name: res.name }] }
               : c
           )
         );

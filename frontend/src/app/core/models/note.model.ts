@@ -15,9 +15,27 @@ export const SUBCATEGORIES: Record<Category, string[]> = {
   TOOLS: ['Guides & How-Tos', 'Tool Documentation'],
 };
 
-export interface CategoryEntry {
+export const CATEGORY_ICONS: Record<string, string> = {
+  PERSONAL: '👤',
+  PROJECTS: '🚀',
+  TECHNICAL: '⚙️',
+  CAREER: '💼',
+  TOOLS: '🔧',
+};
+
+export interface SubcategoryEntry {
+  id: string;
   name: string;
-  subcategories: string[];
+  note_count?: number;
+}
+
+export interface CategoryEntry {
+  id: string;
+  name: string;
+  icon: string;
+  sort_order?: number;
+  note_count?: number;
+  subcategories: SubcategoryEntry[];
 }
 
 export interface Note {
