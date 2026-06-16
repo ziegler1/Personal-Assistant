@@ -6,6 +6,7 @@ import { ContentType, Note, NoteWithFiles, SearchResult } from '../models/note.m
 export interface NoteFilters {
   tag?: string;
   contentType?: ContentType;
+  category?: string;
 }
 
 export interface CreateNoteInput {
@@ -14,6 +15,8 @@ export interface CreateNoteInput {
   content_type?: ContentType;
   source?: string | null;
   tags?: string[];
+  category?: string | null;
+  subcategory?: string | null;
 }
 
 export type UpdateNoteInput = Partial<CreateNoteInput>;
@@ -57,6 +60,7 @@ export class NotesApi {
     let params = new HttpParams();
     if (filters.tag) params = params.set('tag', filters.tag);
     if (filters.contentType) params = params.set('content_type', filters.contentType);
+    if (filters.category) params = params.set('category', filters.category);
     return params;
   }
 }

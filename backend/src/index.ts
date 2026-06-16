@@ -3,6 +3,7 @@ import express from 'express';
 import { config } from './config';
 import { runMigrations } from './db/migrate';
 import { errorHandler } from './middleware/errorHandler';
+import categoriesRoutes from './routes/categories.routes';
 import chatRoutes from './routes/chat.routes';
 import exportRoutes from './routes/export.routes';
 import filesRoutes from './routes/files.routes';
@@ -19,6 +20,7 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/notes', notesRoutes);
 app.use('/api/files', filesRoutes);
+app.use('/api/categories', categoriesRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/export', exportRoutes);
 

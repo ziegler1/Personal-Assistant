@@ -2,7 +2,7 @@ import { pool } from '../db/pool';
 import { getEmbeddingProvider } from '../ai';
 import { ContentType, FileRecord, Note, NoteWithFiles, SearchResult } from '../types/models';
 
-const NOTE_COLUMNS = 'id, title, content, content_type, source, tags, created_at, updated_at';
+const NOTE_COLUMNS = 'id, title, content, content_type, source, tags, category, subcategory, created_at, updated_at';
 
 export interface CreateNoteInput {
   title: string;
@@ -10,6 +10,8 @@ export interface CreateNoteInput {
   content_type?: ContentType;
   source?: string | null;
   tags?: string[];
+  category?: string | null;
+  subcategory?: string | null;
 }
 
 export interface UpdateNoteInput {
@@ -18,11 +20,14 @@ export interface UpdateNoteInput {
   content_type?: ContentType;
   source?: string | null;
   tags?: string[];
+  category?: string | null;
+  subcategory?: string | null;
 }
 
 export interface ListNotesFilter {
   tag?: string;
   contentType?: ContentType;
+  category?: string;
 }
 
 export interface SearchNotesOptions extends ListNotesFilter {
@@ -70,6 +75,10 @@ export async function listNotes(filter: ListNotesFilter = {}): Promise<Note[]> {
     params.push(filter.contentType);
     conditions.push(`content_type = $${params.length}`);
   }
+  if (filter.category) {
+    params.push(filter.category);
+    conditions.push(`category = $${params.length}`);
+  }
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const { rows } = await pool.query<Note>(
@@ -88,10 +97,10 @@ export async function createNote(input: CreateNoteInput): Promise<Note> {
   const embedding = await embedText(`${title}\n\n${content}`);
 
   const { rows } = await pool.query<Note>(
-    `INSERT INTO notes (title, content, content_type, source, tags, embedding)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO notes (title, content, content_type, source, tags, category, subcategory, embedding)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING ${NOTE_COLUMNS}`,
-    [title, content, input.content_type || 'text', input.source ?? null, input.tags ?? [], embedding]
+    [title, content, input.content_type || 'text', input.source ?? null, input.tags ?? [], input.category ?? null, input.subcategory ?? null, embedding]
   );
   return rows[0];
 }
@@ -119,6 +128,8 @@ export async function updateNote(id: string, input: UpdateNoteInput): Promise<No
   const contentType = input.content_type ?? current.content_type;
   const source = input.source !== undefined ? input.source : current.source;
   const tags = input.tags ?? current.tags;
+  const category = input.category !== undefined ? input.category : current.category;
+  const subcategory = input.subcategory !== undefined ? input.subcategory : current.subcategory;
 
   const contentChanged = title !== current.title || content !== current.content;
   const embedding = contentChanged ? await embedText(`${title}\n\n${content}`) : undefined;
@@ -126,10 +137,10 @@ export async function updateNote(id: string, input: UpdateNoteInput): Promise<No
   const { rows } = await pool.query<Note>(
     `UPDATE notes
      SET title = $1, content = $2, content_type = $3, source = $4, tags = $5,
-         embedding = COALESCE($6, embedding)
-     WHERE id = $7
+         category = $6, subcategory = $7, embedding = COALESCE($8, embedding)
+     WHERE id = $9
      RETURNING ${NOTE_COLUMNS}`,
-    [title, content, contentType, source, tags, embedding ?? null, id]
+    [title, content, contentType, source, tags, category, subcategory, embedding ?? null, id]
   );
   return rows[0];
 }
@@ -167,6 +178,10 @@ export async function searchNotes(query: string, opts: SearchNotesOptions = {}):
   if (opts.contentType) {
     params.push(opts.contentType);
     conditions.push(`content_type = $${params.length}`);
+  }
+  if (opts.category) {
+    params.push(opts.category);
+    conditions.push(`category = $${params.length}`);
   }
   const extraWhere = conditions.length ? `AND ${conditions.join(' AND ')}` : '';
 

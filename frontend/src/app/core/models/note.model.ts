@@ -4,6 +4,22 @@ export const CONTENT_TYPES: ContentType[] = ['text', 'code', 'chat', 'file', 'li
 
 export type ExtractionStatus = 'success' | 'empty' | 'error';
 
+export const CATEGORIES = ['PERSONAL', 'PROJECTS', 'TECHNICAL', 'CAREER', 'TOOLS'] as const;
+export type Category = (typeof CATEGORIES)[number];
+
+export const SUBCATEGORIES: Record<Category, string[]> = {
+  PERSONAL: ['Health', 'Recipes & Cooking', 'Restaurants & Dining', 'Legal/Documents'],
+  PROJECTS: ['Cheers-Mate', 'Waypoint', 'PA Development'],
+  TECHNICAL: ['APIs & Architecture', 'Development Best Practices', 'AI/Prompts'],
+  CAREER: ['Skills & Professional Development', 'Learning Resources', 'Networking'],
+  TOOLS: ['Guides & How-Tos', 'Tool Documentation'],
+};
+
+export interface CategoryEntry {
+  name: string;
+  subcategories: string[];
+}
+
 export interface Note {
   id: string;
   title: string;
@@ -11,6 +27,8 @@ export interface Note {
   content_type: ContentType;
   source: string | null;
   tags: string[];
+  category: string | null;
+  subcategory: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +41,8 @@ export interface NoteFile {
   mime_type: string | null;
   size_bytes: number | null;
   extraction_status: ExtractionStatus | null;
+  category: string | null;
+  subcategory: string | null;
   created_at: string;
   note_title?: string;
 }

@@ -5,4 +5,5 @@ import { ContentType } from '../models/note.model';
 export class NotesFilterState {
   readonly contentType = signal<ContentType | ''>('');
   readonly tag = signal('');
+  readonly category = signal('');
 }

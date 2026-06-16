@@ -194,6 +194,53 @@
   color: var(--app-text-muted);
 }
 
+.category-badge {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--app-text-secondary);
+  background: var(--app-surface-2);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.category-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.add-chip {
+  border-style: dashed;
+  color: var(--app-text-muted);
+
+  &:hover {
+    color: var(--app-accent);
+    border-color: var(--app-accent);
+  }
+}
+
+.new-category-input {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--app-accent);
+  background: var(--app-surface);
+  color: var(--app-text-primary);
+  font: inherit;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  width: 160px;
+  outline: none;
+
+  &::placeholder {
+    color: var(--app-text-muted);
+    text-transform: uppercase;
+  }
+}
+
 .tags-section,
 .files-section {
   display: flex;

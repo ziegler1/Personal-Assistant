@@ -16,6 +16,9 @@
     <div class="note-row-main">
       <div class="note-row-line">
         <span class="note-title">{{ note().title }}</span>
+        @if (note().category) {
+          <span class="category-badge">{{ note().category }}</span>
+        }
         <span class="type-badge">{{ note().content_type }}</span>
         <span class="note-date">{{ note().updated_at | date: 'MMM d, y' }}</span>
       </div>

@@ -9,6 +9,25 @@
     </div>
 
     <div class="type-filter-row">
+      <button
+        class="filter-chip"
+        [class.active]="!filterState.category()"
+        (click)="selectCategory('')"
+      >
+        All
+      </button>
+      @for (cat of loadedCategoryNames(); track cat) {
+        <button
+          class="filter-chip category-chip"
+          [class.active]="filterState.category() === cat"
+          (click)="selectCategory(cat)"
+        >
+          {{ cat }}
+        </button>
+      }
+    </div>
+
+    <div class="type-filter-row">
       @for (type of contentTypes; track type) {
         <button
           class="filter-chip"

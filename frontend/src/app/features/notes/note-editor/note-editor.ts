@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
@@ -12,8 +12,9 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { MarkdownModule } from 'ngx-markdown';
 import { NotesApi } from '../../../core/services/notes';
+import { CategoriesApi } from '../../../core/services/categories';
 import { ToastService } from '../../../core/services/toast';
-import { CONTENT_TYPES, ContentType, Note, NoteFile } from '../../../core/models/note.model';
+import { CATEGORIES, CONTENT_TYPES, CategoryEntry, ContentType, Note, NoteFile, SUBCATEGORIES } from '../../../core/models/note.model';
 import { HapticDirective } from '../../../shared/haptic.directive';
 
 interface NoteFormSnapshot {
@@ -22,6 +23,8 @@ interface NoteFormSnapshot {
   contentType: ContentType;
   source: string;
   tags: string[];
+  category: string | null;
+  subcategory: string | null;
 }
 
 @Component({
@@ -45,9 +48,13 @@ interface NoteFormSnapshot {
 })
 export class NoteEditor implements OnInit {
   private notesApi = inject(NotesApi);
+  private categoriesApi = inject(CategoriesApi);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
+
+  private newCatInputRef = viewChild<ElementRef<HTMLInputElement>>('newCatInput');
+  private newSubInputRef = viewChild<ElementRef<HTMLInputElement>>('newSubInput');
 
   protected readonly contentTypes = CONTENT_TYPES;
   protected readonly noteId = signal<string | null>(null);
@@ -57,6 +64,21 @@ export class NoteEditor implements OnInit {
   protected readonly contentType = signal<ContentType>('text');
   protected readonly source = signal('');
   protected readonly tags = signal<string[]>([]);
+  protected readonly category = signal<string | null>(null);
+  protected readonly subcategory = signal<string | null>(null);
+  protected readonly loadedCategories = signal<CategoryEntry[]>([]);
+  protected readonly subcategoriesForCategory = computed(() => {
+    const cat = this.category();
+    if (!cat) return [];
+    return this.loadedCategories().find((c) => c.name === cat)?.subcategories ?? [];
+  });
+
+  // Inline create state
+  protected readonly addingCategory = signal(false);
+  protected readonly newCategoryName = signal('');
+  protected readonly addingSubcategory = signal(false);
+  protected readonly newSubcategoryName = signal('');
+
   protected readonly tagInput = signal('');
   protected readonly allTags = signal<string[]>([]);
   protected readonly filteredTags = computed(() => {
@@ -88,6 +110,8 @@ export class NoteEditor implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadCategories();
+
     this.notesApi.tags().subscribe({
       next: (res) => this.allTags.set(res.tags),
       error: () => this.allTags.set([]),
@@ -109,12 +133,24 @@ export class NoteEditor implements OnInit {
     });
   }
 
+  private loadCategories(): void {
+    this.categoriesApi.list().subscribe({
+      next: (res) => this.loadedCategories.set(res.categories),
+      error: () =>
+        this.loadedCategories.set(
+          CATEGORIES.map((name) => ({ name, subcategories: [...(SUBCATEGORIES[name] as string[])] }))
+        ),
+    });
+  }
+
   private applyNote(note: Note): void {
     this.title.set(note.title);
     this.content.set(note.content);
     this.contentType.set(note.content_type);
     this.source.set(note.source ?? '');
     this.tags.set(note.tags);
+    this.category.set(note.category ?? null);
+    this.subcategory.set(note.subcategory ?? null);
     this.updatedAt.set(note.updated_at);
     this.snapshot = {
       title: note.title,
@@ -122,7 +158,75 @@ export class NoteEditor implements OnInit {
       contentType: note.content_type,
       source: note.source ?? '',
       tags: [...note.tags],
+      category: note.category ?? null,
+      subcategory: note.subcategory ?? null,
     };
+  }
+
+  setCategory(cat: string): void {
+    if (this.category() === cat) {
+      this.category.set(null);
+      this.subcategory.set(null);
+    } else {
+      this.category.set(cat);
+      this.subcategory.set(null);
+    }
+    this.addingSubcategory.set(false);
+    this.newSubcategoryName.set('');
+  }
+
+  startAddingCategory(): void {
+    this.addingCategory.set(true);
+    setTimeout(() => this.newCatInputRef()?.nativeElement.focus(), 0);
+  }
+
+  createCategory(): void {
+    const name = this.newCategoryName().trim().toUpperCase();
+    if (!name) {
+      this.addingCategory.set(false);
+      return;
+    }
+    this.categoriesApi.create(name).subscribe({
+      next: (res) => {
+        if (!this.loadedCategories().find((c) => c.name === res.name)) {
+          this.loadedCategories.update((cats) => [...cats, { name: res.name, subcategories: [] }]);
+        }
+        this.category.set(res.name);
+        this.subcategory.set(null);
+        this.newCategoryName.set('');
+        this.addingCategory.set(false);
+      },
+      error: () => this.toast.error('Failed to create category'),
+    });
+  }
+
+  startAddingSubcategory(): void {
+    this.addingSubcategory.set(true);
+    setTimeout(() => this.newSubInputRef()?.nativeElement.focus(), 0);
+  }
+
+  createSubcategory(): void {
+    const cat = this.category();
+    const name = this.newSubcategoryName().trim();
+    if (!cat || !name) {
+      this.addingSubcategory.set(false);
+      return;
+    }
+    this.categoriesApi.createSubcategory(cat, name).subscribe({
+      next: (res) => {
+        this.loadedCategories.update((cats) =>
+          cats.map((c) =>
+            c.name === cat && !c.subcategories.includes(res.name)
+              ? { ...c, subcategories: [...c.subcategories, res.name] }
+              : c
+          )
+        );
+        this.subcategory.set(res.name);
+        this.newSubcategoryName.set('');
+        this.addingSubcategory.set(false);
+      },
+      error: () => this.toast.error('Failed to create subcategory'),
+    });
   }
 
   addTag(): void {
@@ -158,6 +262,8 @@ export class NoteEditor implements OnInit {
       content_type: this.contentType(),
       source: this.source().trim() || null,
       tags: this.tags(),
+      category: this.category(),
+      subcategory: this.subcategory(),
     };
 
     const id = this.noteId();
@@ -213,8 +319,12 @@ export class NoteEditor implements OnInit {
       this.contentType.set(this.snapshot.contentType);
       this.source.set(this.snapshot.source);
       this.tags.set([...this.snapshot.tags]);
+      this.category.set(this.snapshot.category);
+      this.subcategory.set(this.snapshot.subcategory);
     }
     this.tagInput.set('');
+    this.addingCategory.set(false);
+    this.addingSubcategory.set(false);
     this.mode.set('view');
   }
 

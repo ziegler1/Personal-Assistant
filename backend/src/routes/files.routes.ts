@@ -32,8 +32,8 @@ const router = Router();
 router.get('/', async (_req, res, next) => {
   try {
     const { rows } = await pool.query(
-      `SELECT f.id, f.note_id, f.r2_key, f.filename, f.mime_type, f.size_bytes, f.extraction_status, f.created_at,
-              n.title AS note_title
+      `SELECT f.id, f.note_id, f.r2_key, f.filename, f.mime_type, f.size_bytes, f.extraction_status,
+              f.category, f.subcategory, f.created_at, n.title AS note_title
        FROM files f
        LEFT JOIN notes n ON n.id = f.note_id
        ORDER BY f.created_at DESC`
@@ -51,15 +51,17 @@ router.post('/upload', upload.single('file'), async (req, res, next) => {
     }
 
     const noteId = req.body.note_id || null;
+    const category = req.body.category || null;
+    const subcategory = req.body.subcategory || null;
     const key = `${randomUUID()}-${req.file.originalname}`;
 
     await r2.uploadFile(key, req.file.buffer, req.file.mimetype);
 
     const { rows } = await pool.query(
-      `INSERT INTO files (note_id, r2_key, filename, mime_type, size_bytes)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, note_id, r2_key, filename, mime_type, size_bytes, extraction_status, created_at`,
-      [noteId, key, req.file.originalname, req.file.mimetype, req.file.size]
+      `INSERT INTO files (note_id, r2_key, filename, mime_type, size_bytes, category, subcategory)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, note_id, r2_key, filename, mime_type, size_bytes, extraction_status, category, subcategory, created_at`,
+      [noteId, key, req.file.originalname, req.file.mimetype, req.file.size, category, subcategory]
     );
 
     const file = rows[0];
@@ -101,6 +103,21 @@ router.get('/:id/download', async (req, res, next) => {
 
     const url = await r2.getDownloadUrl(rows[0].r2_key);
     res.json({ url });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/:id', async (req, res, next) => {
+  try {
+    const { category, subcategory } = req.body;
+    const { rows } = await pool.query(
+      `UPDATE files SET category = $1, subcategory = $2 WHERE id = $3
+       RETURNING id, category, subcategory`,
+      [category ?? null, subcategory ?? null, req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'File not found' });
+    res.json(rows[0]);
   } catch (err) {
     next(err);
   }

@@ -7,8 +7,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { NotesApi } from '../../../core/services/notes';
+import { CategoriesApi } from '../../../core/services/categories';
 import { NotesFilterState } from '../../../core/services/notes-filter-state';
-import { CONTENT_TYPES, ContentType, Note } from '../../../core/models/note.model';
+import { CATEGORIES, CONTENT_TYPES, ContentType, Note } from '../../../core/models/note.model';
 import { NoteRow } from '../../../shared/note-row/note-row';
 import { SkeletonList } from '../../../shared/skeleton-list/skeleton-list';
 import { PullToRefresh } from '../../../shared/pull-to-refresh/pull-to-refresh';
@@ -35,18 +36,24 @@ const TAG_FILTER_DEBOUNCE_MS = 300;
 })
 export class NotesList implements OnInit, OnDestroy {
   private notesApi = inject(NotesApi);
+  private categoriesApi = inject(CategoriesApi);
   private router = inject(Router);
   private bottomSheet = inject(MatBottomSheet);
   private toast = inject(ToastService);
   protected readonly filterState = inject(NotesFilterState);
 
   protected readonly contentTypes: (ContentType | '')[] = ['', ...CONTENT_TYPES];
+  protected readonly loadedCategoryNames = signal<string[]>([...CATEGORIES]);
   protected readonly notes = signal<Note[]>([]);
   protected readonly loading = signal(false);
 
   private tagDebounceTimer?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
+    this.categoriesApi.list().subscribe({
+      next: (res) => this.loadedCategoryNames.set(res.categories.map((c) => c.name)),
+      error: () => {},
+    });
     this.load();
   }
 
@@ -60,6 +67,7 @@ export class NotesList implements OnInit, OnDestroy {
       .list({
         contentType: this.filterState.contentType() || undefined,
         tag: this.filterState.tag().trim() || undefined,
+        category: this.filterState.category() || undefined,
       })
       .subscribe({
         next: (res) => {
@@ -75,6 +83,11 @@ export class NotesList implements OnInit, OnDestroy {
     this.load();
   }
 
+  selectCategory(cat: string): void {
+    this.filterState.category.set(cat);
+    this.load();
+  }
+
   onTagInput(value: string): void {
     this.filterState.tag.set(value);
     clearTimeout(this.tagDebounceTimer);
@@ -82,7 +95,7 @@ export class NotesList implements OnInit, OnDestroy {
   }
 
   hasActiveFilters(): boolean {
-    return !!this.filterState.contentType() || !!this.filterState.tag().trim();
+    return !!this.filterState.contentType() || !!this.filterState.tag().trim() || !!this.filterState.category();
   }
 
   newNote(): void {

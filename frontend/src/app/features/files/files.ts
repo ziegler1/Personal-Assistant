@@ -1,13 +1,15 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpEventType } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { FilesApi } from '../../core/services/files';
+import { CategoriesApi } from '../../core/services/categories';
 import { ToastService } from '../../core/services/toast';
-import { NoteFile } from '../../core/models/note.model';
+import { CATEGORIES, CategoryEntry, NoteFile, SUBCATEGORIES } from '../../core/models/note.model';
 import { FilePreviewDialog } from './file-preview-dialog/file-preview-dialog';
 import { SkeletonList } from '../../shared/skeleton-list/skeleton-list';
 import { PullToRefresh } from '../../shared/pull-to-refresh/pull-to-refresh';
@@ -27,17 +29,21 @@ interface UploadItem {
 
 @Component({
   selector: 'app-files',
-  imports: [DatePipe, MatButtonModule, MatIconModule, MatProgressBarModule, SkeletonList, PullToRefresh, HapticDirective],
+  imports: [DatePipe, FormsModule, MatButtonModule, MatIconModule, MatProgressBarModule, SkeletonList, PullToRefresh, HapticDirective],
   templateUrl: './files.html',
   styleUrl: './files.scss',
 })
 export class Files implements OnInit {
   private filesApi = inject(FilesApi);
+  private categoriesApi = inject(CategoriesApi);
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
 
   protected readonly acceptAttr = ACCEPTED_EXTENSIONS.join(',');
   protected readonly files = signal<NoteFile[]>([]);
+  protected readonly loadedCategories = signal<CategoryEntry[]>(
+    CATEGORIES.map((name) => ({ name, subcategories: [...(SUBCATEGORIES[name] as string[])] }))
+  );
   protected readonly loading = signal(false);
   protected readonly uploading = signal(false);
   protected readonly isDragging = signal(false);
@@ -45,6 +51,10 @@ export class Files implements OnInit {
   protected readonly dropzoneCollapsed = signal(window.innerWidth <= MOBILE_BREAKPOINT);
 
   ngOnInit(): void {
+    this.categoriesApi.list().subscribe({
+      next: (res) => this.loadedCategories.set(res.categories),
+      error: () => {},
+    });
     this.load();
   }
 
@@ -112,6 +122,30 @@ export class Files implements OnInit {
 
   dismissUpload(item: UploadItem): void {
     this.uploadItems.set(this.uploadItems().filter((i) => i !== item));
+  }
+
+  subcategoriesFor(category: string): string[] {
+    return this.loadedCategories().find((c) => c.name === category)?.subcategories ?? [];
+  }
+
+  onFileCategoryChange(file: NoteFile, category: string): void {
+    const newCategory = category || null;
+    this.filesApi.updateCategory(file.id, newCategory, null).subscribe({
+      next: () => {
+        this.files.set(this.files().map((f) => (f.id === file.id ? { ...f, category: newCategory, subcategory: null } : f)));
+      },
+      error: () => this.toast.error('Failed to update category'),
+    });
+  }
+
+  onFileSubcategoryChange(file: NoteFile, subcategory: string): void {
+    const newSubcategory = subcategory || null;
+    this.filesApi.updateCategory(file.id, file.category, newSubcategory).subscribe({
+      next: () => {
+        this.files.set(this.files().map((f) => (f.id === file.id ? { ...f, subcategory: newSubcategory } : f)));
+      },
+      error: () => this.toast.error('Failed to update subcategory'),
+    });
   }
 
   formatSize(bytes: number | null): string {

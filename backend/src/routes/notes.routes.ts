@@ -10,9 +10,10 @@ router.get('/search', async (req, res, next) => {
     const q = String(req.query.q ?? '').trim();
     const tag = req.query.tag ? String(req.query.tag) : undefined;
     const contentType = req.query.content_type ? (String(req.query.content_type) as ContentType) : undefined;
+    const category = req.query.category ? String(req.query.category) : undefined;
 
     if (!q) {
-      const results = await notesService.listNotes({ tag, contentType });
+      const results = await notesService.listNotes({ tag, contentType, category });
       return res.json({ results });
     }
 
@@ -22,7 +23,7 @@ router.get('/search', async (req, res, next) => {
       if (!Number.isNaN(parsed)) minScore = Math.min(1, Math.max(0, parsed));
     }
 
-    const results = await notesService.searchNotes(q, { tag, contentType, minScore });
+    const results = await notesService.searchNotes(q, { tag, contentType, category, minScore });
     res.json({ results });
   } catch (err) {
     next(err);
@@ -42,7 +43,8 @@ router.get('/', async (req, res, next) => {
   try {
     const tag = req.query.tag ? String(req.query.tag) : undefined;
     const contentType = req.query.content_type ? (String(req.query.content_type) as ContentType) : undefined;
-    const notes = await notesService.listNotes({ tag, contentType });
+    const category = req.query.category ? String(req.query.category) : undefined;
+    const notes = await notesService.listNotes({ tag, contentType, category });
     res.json({ notes });
   } catch (err) {
     next(err);

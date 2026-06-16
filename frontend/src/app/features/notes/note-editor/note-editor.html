@@ -21,6 +21,9 @@
 
     <div class="detail-meta">
       <span class="type-badge">{{ contentType() }}</span>
+      @if (category()) {
+        <span class="category-badge">{{ category() }}{{ subcategory() ? ' · ' + subcategory() : '' }}</span>
+      }
       @if (source()) {
         <span class="detail-source">
           Source:
@@ -103,6 +106,52 @@
         <button class="type-chip" [class.active]="contentType() === type" (click)="contentType.set(type)">
           {{ type }}
         </button>
+      }
+    </div>
+
+    <div class="category-section">
+      <label class="field-label">Category</label>
+      <div class="type-chip-row">
+        @for (cat of loadedCategories(); track cat.name) {
+          <button class="type-chip" [class.active]="category() === cat.name" (click)="setCategory(cat.name)">
+            {{ cat.name }}
+          </button>
+        }
+        @if (!addingCategory()) {
+          <button class="type-chip add-chip" (click)="startAddingCategory()">+ New</button>
+        } @else {
+          <input
+            #newCatInput
+            class="new-category-input"
+            placeholder="CATEGORY NAME"
+            [ngModel]="newCategoryName()"
+            (ngModelChange)="newCategoryName.set($event)"
+            (keyup.enter)="createCategory()"
+            (keyup.escape)="addingCategory.set(false)"
+          />
+        }
+      </div>
+      @if (category()) {
+        <div class="type-chip-row">
+          @for (sub of subcategoriesForCategory(); track sub) {
+            <button class="type-chip" [class.active]="subcategory() === sub" (click)="subcategory.set(sub)">
+              {{ sub }}
+            </button>
+          }
+          @if (!addingSubcategory()) {
+            <button class="type-chip add-chip" (click)="startAddingSubcategory()">+ New</button>
+          } @else {
+            <input
+              #newSubInput
+              class="new-category-input"
+              placeholder="Subcategory name"
+              [ngModel]="newSubcategoryName()"
+              (ngModelChange)="newSubcategoryName.set($event)"
+              (keyup.enter)="createSubcategory()"
+              (keyup.escape)="addingSubcategory.set(false)"
+            />
+          }
+        </div>
       }
     </div>
 

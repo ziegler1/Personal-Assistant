@@ -9,6 +9,8 @@ export interface Note {
   content_type: ContentType;
   source: string | null;
   tags: string[];
+  category: string | null;
+  subcategory: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -32,5 +34,7 @@ export interface FileRecord {
   mime_type: string | null;
   size_bytes: number | null;
   extraction_status: ExtractionStatus | null;
+  category: string | null;
+  subcategory: string | null;
   created_at: string;
 }

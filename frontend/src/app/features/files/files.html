@@ -80,23 +80,51 @@
   } @else {
     <div class="file-list">
       @for (file of files(); track file.id) {
-        <div class="file-row">
-          <mat-icon class="file-icon" [class]="fileIconClass(file.mime_type)">{{ fileIcon(file.mime_type) }}</mat-icon>
-          <button class="file-name" (click)="preview(file)">{{ file.filename }}</button>
-          @if (file.extraction_status === 'empty') {
-            <mat-icon class="extraction-warning" title="No searchable text could be extracted from this file"
-              >warning</mat-icon
+        <div class="file-item">
+          <div class="file-row">
+            <mat-icon class="file-icon" [class]="fileIconClass(file.mime_type)">{{ fileIcon(file.mime_type) }}</mat-icon>
+            <button class="file-name" (click)="preview(file)">{{ file.filename }}</button>
+            @if (file.extraction_status === 'empty') {
+              <mat-icon class="extraction-warning" title="No searchable text could be extracted from this file"
+                >warning</mat-icon
+              >
+            }
+            <span class="file-size">{{ formatSize(file.size_bytes) }}</span>
+            <span class="file-date">{{ file.created_at | date: 'MMM d, y' }}</span>
+            <div class="file-actions">
+              <button mat-icon-button (click)="download(file)" aria-label="Download file">
+                <mat-icon>download</mat-icon>
+              </button>
+              <button mat-icon-button appHaptic (click)="delete(file)" aria-label="Delete file">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+          <div class="file-category-row">
+            <select
+              class="category-select"
+              [ngModel]="file.category || ''"
+              (ngModelChange)="onFileCategoryChange(file, $event)"
+              aria-label="Category"
             >
-          }
-          <span class="file-size">{{ formatSize(file.size_bytes) }}</span>
-          <span class="file-date">{{ file.created_at | date: 'MMM d, y' }}</span>
-          <div class="file-actions">
-            <button mat-icon-button (click)="download(file)" aria-label="Download file">
-              <mat-icon>download</mat-icon>
-            </button>
-            <button mat-icon-button appHaptic (click)="delete(file)" aria-label="Delete file">
-              <mat-icon>delete</mat-icon>
-            </button>
+              <option value="">— category —</option>
+              @for (cat of loadedCategories(); track cat.name) {
+                <option [value]="cat.name">{{ cat.name }}</option>
+              }
+            </select>
+            @if (file.category) {
+              <select
+                class="category-select"
+                [ngModel]="file.subcategory || ''"
+                (ngModelChange)="onFileSubcategoryChange(file, $event)"
+                aria-label="Subcategory"
+              >
+                <option value="">— subcategory —</option>
+                @for (sub of subcategoriesFor(file.category); track sub) {
+                  <option [value]="sub">{{ sub }}</option>
+                }
+              </select>
+            }
           </div>
         </div>
       }

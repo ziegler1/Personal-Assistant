@@ -22,6 +22,10 @@ export class FilesApi {
     });
   }
 
+  updateCategory(id: string, category: string | null, subcategory: string | null): Observable<Pick<NoteFile, 'id' | 'category' | 'subcategory'>> {
+    return this.http.patch<Pick<NoteFile, 'id' | 'category' | 'subcategory'>>(`${this.base}/${id}`, { category, subcategory });
+  }
+
   getDownloadUrl(id: string): Observable<{ url: string }> {
     return this.http.get<{ url: string }>(`${this.base}/${id}/download`);
   }
