@@ -1,24 +1,7 @@
-import nodemailer, { Transporter } from 'nodemailer';
-import { config } from '../config';
-
 export interface EmailAttachment {
   filename: string;
   content: Buffer;
   contentType: string;
-}
-
-let transporter: Transporter | undefined;
-
-function getTransporter(): Transporter {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: config.smtp.host,
-      port: config.smtp.port,
-      secure: config.smtp.port === 465,
-      auth: config.smtp.user ? { user: config.smtp.user, pass: config.smtp.pass } : undefined,
-    });
-  }
-  return transporter;
 }
 
 export async function sendExportEmail(
@@ -27,23 +10,45 @@ export async function sendExportEmail(
   attachment: EmailAttachment | null,
   to?: string
 ): Promise<void> {
-  const recipient = to || config.notifyEmail;
-  if (!config.smtp.host || !recipient) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const recipient = to || process.env.NOTIFY_EMAIL;
+  const from = process.env.SMTP_FROM || 'onboarding@resend.dev';
+
+  if (!apiKey || !recipient) {
     throw Object.assign(
-      new Error('Email is not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASS, SMTP_FROM, and NOTIFY_EMAIL in the server environment.'),
+      new Error('Email is not configured. Set RESEND_API_KEY and NOTIFY_EMAIL in the server environment.'),
       { status: 503 }
     );
   }
 
-  const mailOptions: Parameters<ReturnType<typeof getTransporter>['sendMail']>[0] = {
-    from: config.smtp.from || config.smtp.user,
+  const body: Record<string, unknown> = {
+    from,
     to: recipient,
     subject,
     text,
   };
+
   if (attachment) {
-    mailOptions.attachments = [attachment];
+    body.attachments = [{
+      filename: attachment.filename,
+      content: attachment.content.toString('base64'),
+    }];
   }
 
-  await getTransporter().sendMail(mailOptions);
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw Object.assign(
+      new Error(`Resend API error: ${JSON.stringify(error)}`),
+      { status: 502 }
+    );
+  }
 }
