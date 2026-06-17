@@ -111,6 +111,25 @@ export interface ChatHistoryMessage {
   created_at: string;
 }
 
+export interface ShareLink {
+  id: string;
+  token: string;
+  created_at: string;
+  expires_at: string | null;
+  revoked_at: string | null;
+}
+
+export interface SharedNote {
+  title: string;
+  content: string;
+  content_type: ContentType;
+  tags: string[];
+  category: string | null;
+  subcategory: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export type GenerateFormat = 'note-card' | 'workflow-diagram' | 'markdown-doc' | 'checklist';
 
 export const GENERATE_FORMATS: { value: GenerateFormat; label: string }[] = [

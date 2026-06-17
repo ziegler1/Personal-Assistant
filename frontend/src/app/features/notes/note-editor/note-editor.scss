@@ -26,6 +26,36 @@
   color: var(--app-danger);
 }
 
+.share-panel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--mat-sys-surface-container);
+  border-radius: 8px;
+  padding: 4px 8px;
+  margin-top: -8px;
+
+  .share-panel-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--mat-sys-on-surface-variant);
+    flex-shrink: 0;
+  }
+}
+
+.share-url-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--mat-sys-on-surface);
+  font-size: 0.8125rem;
+  font-family: monospace;
+  min-width: 0;
+  outline: none;
+  cursor: text;
+}
+
 .detail-title {
   margin: 0;
   font-size: 1.75rem;

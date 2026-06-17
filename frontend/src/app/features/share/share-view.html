@@ -1,0 +1,38 @@
+<div class="share-page">
+  @if (loading()) {
+    <p class="share-status">Loading…</p>
+  } @else if (error()) {
+    <div class="share-error">
+      <p>{{ error() }}</p>
+    </div>
+  } @else if (note(); as n) {
+    <article class="share-note">
+      <header class="share-header">
+        <h1 class="share-title">{{ n.title }}</h1>
+        <div class="share-meta">
+          <span class="type-badge">{{ n.content_type }}</span>
+          @if (n.category) {
+            <span class="category-badge">{{ n.category }}{{ n.subcategory ? ' · ' + n.subcategory : '' }}</span>
+          }
+        </div>
+        @if (n.tags.length > 0) {
+          <mat-chip-set class="share-tags">
+            @for (tag of n.tags; track tag) {
+              <mat-chip>{{ tag }}</mat-chip>
+            }
+          </mat-chip-set>
+        }
+      </header>
+
+      @if (n.content_type === 'code') {
+        <pre class="share-content share-content-code">{{ n.content }}</pre>
+      } @else {
+        <markdown class="share-content share-markdown" [data]="n.content" />
+      }
+
+      <footer class="share-footer">
+        Shared from Zig's Personal Assistant
+      </footer>
+    </article>
+  }
+</div>

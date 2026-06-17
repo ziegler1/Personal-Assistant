@@ -1,0 +1,48 @@
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--mat-sys-surface);
+}
+
+.login-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 40px;
+  background: var(--mat-sys-surface-container);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.logo-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: var(--mat-sys-primary);
+}
+
+.login-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+}
+
+.password-field {
+  width: 100%;
+}
+
+.login-error {
+  color: var(--mat-sys-error);
+  font-size: 0.875rem;
+  margin: 0;
+  text-align: center;
+}
+
+.login-btn {
+  width: 100%;
+}

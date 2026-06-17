@@ -13,6 +13,15 @@
         <button mat-icon-button (click)="emailNote()" aria-label="Email note" title="Email…">
           <mat-icon>email</mat-icon>
         </button>
+        <button
+          mat-icon-button
+          (click)="generateShareLink()"
+          [disabled]="sharingInProgress()"
+          aria-label="Share note"
+          title="Share"
+        >
+          <mat-icon>share</mat-icon>
+        </button>
         <button mat-icon-button class="danger-icon-btn" appHaptic (click)="delete()" aria-label="Delete note">
           <mat-icon>delete</mat-icon>
         </button>
@@ -22,6 +31,19 @@
         </button>
       </div>
     </div>
+
+    @if (shareUrl()) {
+      <div class="share-panel">
+        <mat-icon class="share-panel-icon">link</mat-icon>
+        <input class="share-url-input" [value]="shareUrl()" readonly aria-label="Share URL" />
+        <button mat-icon-button (click)="copyShareUrl()" title="Copy link" aria-label="Copy share link">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+        <button mat-icon-button (click)="revokeShareLink()" title="Revoke link" aria-label="Revoke share link" class="danger-icon-btn">
+          <mat-icon>link_off</mat-icon>
+        </button>
+      </div>
+    }
 
     <h1 class="detail-title">{{ title() }}</h1>
 

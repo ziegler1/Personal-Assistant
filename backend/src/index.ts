@@ -1,28 +1,37 @@
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import { config } from './config';
 import { runMigrations } from './db/migrate';
+import { requireAuth } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
+import authRoutes from './routes/auth.routes';
 import categoriesRoutes from './routes/categories.routes';
 import chatRoutes from './routes/chat.routes';
 import exportRoutes from './routes/export.routes';
 import filesRoutes from './routes/files.routes';
 import notesRoutes from './routes/notes.routes';
+import shareRoutes from './routes/share.routes';
 
 const app = express();
 
-app.use(cors({ origin: config.corsOrigin }));
+app.use(cors({ origin: config.corsOrigin, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
 
+// Public endpoints — no auth
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', aiProvider: config.aiProvider });
 });
+app.use('/api/auth', authRoutes);
+app.use('/api/share', shareRoutes);
 
-app.use('/api/notes', notesRoutes);
-app.use('/api/files', filesRoutes);
-app.use('/api/categories', categoriesRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/export', exportRoutes);
+// Protected endpoints — require valid session cookie
+app.use('/api/notes', requireAuth, notesRoutes);
+app.use('/api/files', requireAuth, filesRoutes);
+app.use('/api/categories', requireAuth, categoriesRoutes);
+app.use('/api/chat', requireAuth, chatRoutes);
+app.use('/api/export', requireAuth, exportRoutes);
 
 app.use(errorHandler);
 

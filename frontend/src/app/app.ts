@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
@@ -8,10 +8,8 @@ import { Sidebar } from './layout/sidebar/sidebar';
 import { BottomNav } from './layout/bottom-nav/bottom-nav';
 
 const MOBILE_BREAKPOINT = '(max-width: 767.98px)';
-
-// Top-level tabs in the order they appear in the bottom nav — used to decide
-// whether a navigation should slide in from the right (forward) or left (back).
 const ROUTE_ORDER = ['/', '/notes', '/search', '/chat', '/files'];
+const NO_SHELL_PREFIXES = ['/login', '/share/'];
 
 function topLevelSegment(url: string): string {
   const path = url.split('?')[0].split('#')[0];
@@ -35,6 +33,11 @@ export class App {
   );
 
   protected readonly navDirection = signal<'forward' | 'back' | 'fade'>('fade');
+  private readonly currentUrl = signal('/');
+
+  protected readonly showShell = computed(() =>
+    !NO_SHELL_PREFIXES.some((prefix) => this.currentUrl().startsWith(prefix)),
+  );
 
   private previousSegment: string | null = null;
 
@@ -42,7 +45,10 @@ export class App {
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => {
-        const segment = topLevelSegment(event.urlAfterRedirects);
+        const url = event.urlAfterRedirects;
+        this.currentUrl.set(url);
+
+        const segment = topLevelSegment(url);
         const prevIndex = this.previousSegment ? ROUTE_ORDER.indexOf(this.previousSegment) : -1;
         const nextIndex = ROUTE_ORDER.indexOf(segment);
 

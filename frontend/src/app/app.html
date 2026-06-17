@@ -1,21 +1,25 @@
-<mat-sidenav-container class="app-shell">
-  @if (!isMobile()) {
-    <mat-sidenav class="app-sidenav" mode="side" opened disableClose>
-      <app-sidebar />
-    </mat-sidenav>
+@if (showShell()) {
+  <mat-sidenav-container class="app-shell">
+    @if (!isMobile()) {
+      <mat-sidenav class="app-sidenav" mode="side" opened disableClose>
+        <app-sidebar />
+      </mat-sidenav>
+    }
+
+    <mat-sidenav-content class="app-content">
+      <main
+        class="page-content"
+        [class.nav-forward]="navDirection() === 'forward'"
+        [class.nav-back]="navDirection() === 'back'"
+      >
+        <router-outlet />
+      </main>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+
+  @if (isMobile()) {
+    <app-bottom-nav />
   }
-
-  <mat-sidenav-content class="app-content">
-    <main
-      class="page-content"
-      [class.nav-forward]="navDirection() === 'forward'"
-      [class.nav-back]="navDirection() === 'back'"
-    >
-      <router-outlet />
-    </main>
-  </mat-sidenav-content>
-</mat-sidenav-container>
-
-@if (isMobile()) {
-  <app-bottom-nav />
+} @else {
+  <router-outlet />
 }

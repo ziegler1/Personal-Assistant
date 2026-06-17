@@ -14,6 +14,7 @@ import { MarkdownModule } from 'ngx-markdown';
 import { NotesApi } from '../../../core/services/notes';
 import { CategoriesApi } from '../../../core/services/categories';
 import { ExportApi } from '../../../core/services/export';
+import { ShareApi } from '../../../core/services/share';
 import { ToastService } from '../../../core/services/toast';
 import { CATEGORIES, CATEGORY_ICONS, CONTENT_TYPES, CategoryEntry, ContentType, Note, NoteFile, SUBCATEGORIES } from '../../../core/models/note.model';
 import { HapticDirective } from '../../../shared/haptic.directive';
@@ -51,6 +52,7 @@ export class NoteEditor implements OnInit {
   private notesApi = inject(NotesApi);
   private categoriesApi = inject(CategoriesApi);
   private exportApi = inject(ExportApi);
+  private shareApi = inject(ShareApi);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
@@ -100,6 +102,9 @@ export class NoteEditor implements OnInit {
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly showRaw = signal(false);
+  protected readonly shareToken = signal<string | null>(null);
+  protected readonly shareUrl = signal<string | null>(null);
+  protected readonly sharingInProgress = signal(false);
 
   private snapshot: NoteFormSnapshot | null = null;
 
@@ -357,6 +362,48 @@ export class NoteEditor implements OnInit {
       next: () => this.toast.success('Note emailed'),
       error: (err) => this.toast.error(err?.error?.error || 'Failed to send email. Check SMTP configuration.'),
     });
+  }
+
+  generateShareLink(): void {
+    const id = this.noteId();
+    if (!id || this.sharingInProgress()) return;
+    this.sharingInProgress.set(true);
+    this.shareApi.create(id).subscribe({
+      next: ({ token }) => {
+        const url = `${window.location.origin}/share/${token}`;
+        this.shareToken.set(token);
+        this.shareUrl.set(url);
+        this.sharingInProgress.set(false);
+        navigator.clipboard.writeText(url).catch(() => {});
+        this.toast.success('Share link copied to clipboard');
+      },
+      error: () => {
+        this.sharingInProgress.set(false);
+        this.toast.error('Failed to create share link');
+      },
+    });
+  }
+
+  revokeShareLink(): void {
+    const id = this.noteId();
+    const token = this.shareToken();
+    if (!id || !token) return;
+    this.shareApi.revoke(id, token).subscribe({
+      next: () => {
+        this.shareToken.set(null);
+        this.shareUrl.set(null);
+        this.toast.success('Share link revoked');
+      },
+      error: () => this.toast.error('Failed to revoke share link'),
+    });
+  }
+
+  copyShareUrl(): void {
+    const url = this.shareUrl();
+    if (url) {
+      navigator.clipboard.writeText(url).catch(() => {});
+      this.toast.success('Copied to clipboard');
+    }
   }
 
   backToList(): void {

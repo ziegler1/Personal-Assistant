@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from '../../core/services/auth';
 
 interface NavItem {
   path: string;
@@ -16,11 +18,14 @@ interface NavGroup {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive, MatIconModule, MatListModule],
+  imports: [RouterLink, RouterLinkActive, MatIconModule, MatListModule, MatButtonModule],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss',
 })
 export class Sidebar {
+  private auth = inject(AuthService);
+  private router = inject(Router);
+
   protected readonly navGroups: NavGroup[] = [
     {
       label: 'Knowledge',
@@ -41,4 +46,11 @@ export class Sidebar {
       items: [{ path: '/notes/new', label: 'New Note', icon: 'add' }],
     },
   ];
+
+  logout(): void {
+    this.auth.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: () => this.router.navigate(['/login']),
+    });
+  }
 }
