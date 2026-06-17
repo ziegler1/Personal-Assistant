@@ -6,7 +6,6 @@ export function shareNote(note: Note, shareApi: ShareApi, toast: ToastService): 
   shareApi.create(note.id).subscribe({
     next: ({ token }) => {
       const url = `${window.location.origin}/share/${token}`;
-      console.debug('[shareNote] sharing url:', url); // remove after verifying
 
       if (navigator.share) {
         navigator.share({ title: note.title, url }).catch(() => {});
