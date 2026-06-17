@@ -42,6 +42,14 @@ title: Plan
      resolution (see [docker/nginx.conf.template](../docker/nginx.conf.template)).
   3. Backend `ECONNREFUSED 127.0.0.1:5432` on startup - fixed by setting
      `DATABASE_URL=${{Postgres.DATABASE_URL}}` on the backend service.
+- **Authentication + share links** (2026-06-17) - built-in password-protected
+  login screen (JWT cookie, `APP_PASSWORD` / `JWT_SECRET` env vars). All API
+  routes now reject unauthenticated requests. Scoped public share links: any
+  note can generate a `/share/:token` URL that shows only that note's content
+  with no app chrome — tokens stored in `share_links` table, revocable on
+  demand. Fixed iOS native share sheet bug where `/notes/:id` (authenticated
+  route) was being passed to `navigator.share()` instead of the public
+  `/share/:token` URL.
 - **Current status** - live on Railway: Postgres, PA-Backend, and
   Personal-Assistant (frontend) services are all green.
 
@@ -54,9 +62,7 @@ title: Plan
 - **CI/CD** - no `.github/workflows` yet. Add a pipeline that runs
   lint/build/tests on PRs, and consider auto-deploying to Railway on merge to
   `main`.
-- **Authentication** - the API and frontend currently have no auth; anyone
-  with the Railway URL can read/write notes and chat. Add at least basic auth
-  or a login flow before sharing the URL beyond yourself.
+- ~~**Authentication**~~ ✅ Done 2026-06-17 — password login + JWT sessions + scoped share links.
 - **Re-embedding workflow** - switching `AI_PROVIDER` doesn't retroactively
   re-embed existing notes (and the `embedding` column's vector dimension is
   fixed at migration time per provider). Add a script or admin endpoint to

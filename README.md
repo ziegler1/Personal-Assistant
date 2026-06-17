@@ -18,10 +18,12 @@ cites your own notes as sources.
   linked to a note, with inline image/PDF previews.
 - **Pluggable AI providers** - switch between Claude (chat) + Cohere
   (embeddings), OpenAI, or a fully local Ollama setup via one env var.
+- **Authentication** - password-protected login screen (JWT session cookie); all API routes reject unauthenticated requests. Set `APP_PASSWORD` and `JWT_SECRET` env vars.
+- **Scoped share links** - generate a unique, unguessable public link for any note. Recipients see only that note's content — no sidebar, no navigation, no access to anything else. Links can be revoked instantly.
 - **Mobile-friendly UI** - a Home dashboard (quick search, recent notes, FAB
   for quick add), bottom tab navigation on handsets, pull-to-refresh,
   long-press action sheets (edit/delete/share), skeleton loaders, haptic
-  feedback, and native share/clipboard for note links.
+  feedback, and native share sheet for note links (iOS/Android).
 
 ## Tech stack
 
@@ -157,6 +159,8 @@ outside Docker.
 | `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET_NAME` / `R2_ENDPOINT` | Cloudflare R2 credentials for file storage |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | SMTP credentials used by the "email to self" export action. Optional - leave `SMTP_HOST` blank to disable it (the endpoint returns 503) |
 | `NOTIFY_EMAIL` | Destination address for "email to self" exports |
+| `APP_PASSWORD` | Login passphrase for the built-in auth gate |
+| `JWT_SECRET` | Long random string used to sign session cookies — generate with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `PORT` | Backend port (default `3000`) |
 | `CORS_ORIGIN` | Allowed origin for the frontend (default `http://localhost:4200`) |
 
@@ -178,6 +182,13 @@ outside Docker.
 | `POST` | `/api/chat/generate` | Transform a chat message into a note card, workflow diagram, markdown doc, or checklist |
 | `POST` | `/api/export/share` | Upload a generated export to R2 and return a 7-day shareable link |
 | `POST` | `/api/export/email` | Email a generated export to `NOTIFY_EMAIL` (requires SMTP config) |
+| `POST` | `/api/auth/login` | Authenticate with `APP_PASSWORD`; sets a session cookie |
+| `POST` | `/api/auth/logout` | Clear the session cookie |
+| `GET` | `/api/auth/me` | Check if the current session is valid |
+| `POST` | `/api/notes/:id/share` | Generate a public share token for a note |
+| `GET` | `/api/notes/:id/shares` | List all share links for a note |
+| `DELETE` | `/api/notes/:id/share/:token` | Revoke a share link |
+| `GET` | `/api/share/:token` | **Public** — fetch shared note content (no auth required) |
 
 ## Deploying to Railway
 
@@ -241,37 +252,18 @@ you host other small apps as `<app>.yourdomain.com`).
    `https://pa.yourdomain.com` so the API accepts requests from the new
    domain.
 
-## Restricting access with Cloudflare Access
+## Authentication
 
-The app currently has no built-in authentication (see
-[docs/plan.md](docs/plan.md)), so anyone with the URL can read/write notes and
-chat. Cloudflare Access (part of Cloudflare Zero Trust, free for small teams)
-adds a login wall in front of the site with no code changes - it sits entirely
-at Cloudflare's edge.
+The app has a built-in password-protected login screen. Set two env vars on the backend:
 
-**Prerequisite**: the app must be served from a Cloudflare-proxied (orange
-cloud) hostname, e.g. the `pa.yourdomain.com` setup above.
+```
+APP_PASSWORD=your-passphrase
+JWT_SECRET=long-random-string  # generate: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
-1. Open the [Cloudflare Zero Trust dashboard](https://one.dash.cloudflare.com/)
-   for your account.
-2. Go to **Access → Applications → Add an application → Self-hosted**.
-3. Set the **Application domain** to `pa.yourdomain.com` (the custom domain
-   from above).
-4. Choose a **session duration** (how long a login lasts before re-auth is
-   required).
-5. Add an **Access policy**, e.g. an "Allow" rule for your email address using
-   the built-in **One-time PIN** login method (Cloudflare emails you a code -
-   no extra identity provider setup needed). Add more emails or connect an
-   identity provider (Google, GitHub, etc.) if others need access.
-6. Save. Visiting `https://pa.yourdomain.com` now redirects to a Cloudflare
-   login page before reaching the Railway-hosted frontend.
+Opening the app without a valid session redirects to `/login`. All API routes return `401` without a valid cookie. The session lasts 7 days.
 
-Because the SPA's `/api/*` calls are same-origin (proxied through the
-frontend's nginx to the backend), they're covered by the same Access session
-cookie - no separate API configuration is needed. If you ever need
-programmatic (non-browser) access to the API, issue a
-[service token](https://developers.cloudflare.com/cloudflare-one/identity/service-tokens/)
-instead of disabling Access.
+**Share links** let you share individual notes publicly without giving anyone app access. Click the share icon on any note to generate a unique `/share/:token` URL. Opening it shows only that note's content — no sidebar, no navigation. Links can be revoked at any time from the same note view.
 
 ## Local AI fallback (Ollama)
 
