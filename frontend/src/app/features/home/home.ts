@@ -9,6 +9,7 @@ import { NotesApi } from '../../core/services/notes';
 import { FilesApi } from '../../core/services/files';
 import { ChatApi } from '../../core/services/chat';
 import { HapticService } from '../../core/services/haptic';
+import { ShareApi } from '../../core/services/share';
 import { ToastService } from '../../core/services/toast';
 import { Note } from '../../core/models/note.model';
 import { NoteRow } from '../../shared/note-row/note-row';
@@ -36,6 +37,7 @@ export class Home implements OnInit {
   private dialog = inject(MatDialog);
   private bottomSheet = inject(MatBottomSheet);
   private haptic = inject(HapticService);
+  private shareApi = inject(ShareApi);
   private toast = inject(ToastService);
 
   protected readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
@@ -148,7 +150,7 @@ export class Home implements OnInit {
             this.deleteNote(note.id);
             break;
           case 'share':
-            shareNote(note, this.toast);
+            shareNote(note, this.shareApi, this.toast);
             break;
         }
       });

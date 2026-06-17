@@ -9,6 +9,7 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { NotesApi } from '../../../core/services/notes';
 import { CategoriesApi } from '../../../core/services/categories';
 import { ExportApi } from '../../../core/services/export';
+import { ShareApi } from '../../../core/services/share';
 import { NotesFilterState } from '../../../core/services/notes-filter-state';
 import { ToastService } from '../../../core/services/toast';
 import {
@@ -61,6 +62,7 @@ export class NotesList implements OnInit, OnDestroy {
   private notesApi = inject(NotesApi);
   private categoriesApi = inject(CategoriesApi);
   private exportApi = inject(ExportApi);
+  private shareApi = inject(ShareApi);
   private router = inject(Router);
   private bottomSheet = inject(MatBottomSheet);
   private toast = inject(ToastService);
@@ -210,7 +212,7 @@ export class NotesList implements OnInit, OnDestroy {
             this.deleteNote(note.id);
             break;
           case 'share':
-            shareNote(note, this.toast);
+            shareNote(note, this.shareApi, this.toast);
             break;
           case 'download':
             this.downloadNoteAsMd(note);
