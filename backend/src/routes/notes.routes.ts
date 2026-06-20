@@ -1,5 +1,7 @@
 import { randomBytes } from 'crypto';
 import { Router } from 'express';
+import { JSDOM } from 'jsdom';
+import { Readability } from '@mozilla/readability';
 import { pool } from '../db/pool';
 import * as notesService from '../services/notesService';
 import { config } from '../config';
@@ -58,6 +60,85 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const note = await notesService.createNote(req.body);
+    res.status(201).json(note);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/from-url', async (req, res, next) => {
+  try {
+    const { url } = req.body as { url?: unknown };
+
+    if (!url || typeof url !== 'string' || !url.trim()) {
+      return res.status(400).json({ error: 'url is required' });
+    }
+
+    const trimmedUrl = url.trim();
+    let parsed: URL;
+    try {
+      parsed = new URL(trimmedUrl);
+    } catch {
+      return res.status(400).json({ error: 'Invalid URL — must be a valid http or https address' });
+    }
+
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return res.status(400).json({ error: 'Only http and https URLs are supported' });
+    }
+
+    let html: string;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15_000);
+      const response = await fetch(trimmedUrl, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+        },
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        return res.status(422).json({ error: `Could not fetch URL (server returned HTTP ${response.status})` });
+      }
+
+      html = await response.text();
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return res.status(422).json({ error: 'Request timed out — the URL took too long to respond' });
+      }
+      return res.status(422).json({ error: 'Could not reach this URL — check the address and try again' });
+    }
+
+    let title: string;
+    let content: string;
+    try {
+      const dom = new JSDOM(html, { url: trimmedUrl });
+      const article = new Readability(dom.window.document).parse();
+
+      if (!article || !article.textContent?.trim() || article.textContent.trim().length < 100) {
+        return res.status(422).json({ error: 'Could not extract content from this URL — the page may require JavaScript, authentication, or is otherwise unreadable' });
+      }
+
+      title = article.title?.trim() || trimmedUrl;
+      content = article.textContent.trim();
+    } catch (err) {
+      console.error('Article extraction failed:', err);
+      return res.status(422).json({ error: 'Could not extract content from this URL' });
+    }
+
+    const note = await notesService.createNote({
+      title,
+      content,
+      content_type: 'link',
+      source: trimmedUrl,
+      tags: [],
+      category: null,
+      subcategory: null,
+    });
+
     res.status(201).json(note);
   } catch (err) {
     next(err);

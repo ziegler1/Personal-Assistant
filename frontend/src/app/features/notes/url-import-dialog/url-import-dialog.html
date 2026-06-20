@@ -1,0 +1,45 @@
+<h2 mat-dialog-title>Import from URL</h2>
+
+@if (loading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+<mat-dialog-content class="url-import-content">
+  <mat-form-field appearance="outline" class="url-field">
+    <mat-label>URL</mat-label>
+    <mat-icon matPrefix>link</mat-icon>
+    <input
+      matInput
+      type="url"
+      [ngModel]="url()"
+      (ngModelChange)="url.set($event)"
+      (keydown.enter)="import()"
+      placeholder="https://example.com/article"
+      autofocus
+      [disabled]="loading()"
+    />
+  </mat-form-field>
+
+  @if (error()) {
+    <p class="error-message">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      {{ error() }}
+    </p>
+  }
+
+  <p class="hint">
+    Fetches the page and saves the readable text as a note. Works best with articles and blog posts.
+  </p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()" [disabled]="loading()">Cancel</button>
+  <button
+    mat-flat-button
+    color="primary"
+    (click)="import()"
+    [disabled]="!url().trim() || loading()"
+  >
+    {{ loading() ? 'Fetching…' : 'Import' }}
+  </button>
+</mat-dialog-actions>

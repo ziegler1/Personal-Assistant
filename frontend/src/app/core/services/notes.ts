@@ -53,6 +53,10 @@ export class NotesApi {
     return this.http.put<Note>(`${this.base}/${id}`, input);
   }
 
+  fromUrl(url: string): Observable<Note> {
+    return this.http.post<Note>(`${this.base}/from-url`, { url });
+  }
+
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }

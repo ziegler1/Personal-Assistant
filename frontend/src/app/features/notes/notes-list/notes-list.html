@@ -22,6 +22,14 @@
         >
           <mat-icon>{{ viewMode() === 'list' ? 'grid_view' : 'view_list' }}</mat-icon>
         </button>
+        <button
+          mat-icon-button
+          (click)="importFromUrl()"
+          title="Import from URL"
+          aria-label="Import from URL"
+        >
+          <mat-icon>link</mat-icon>
+        </button>
         <button mat-flat-button color="primary" (click)="newNote()">
           <mat-icon>add</mat-icon>
           New Note

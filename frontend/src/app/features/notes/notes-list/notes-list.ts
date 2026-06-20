@@ -6,6 +6,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
+import { UrlImportDialog } from '../url-import-dialog/url-import-dialog';
 import { NotesApi } from '../../../core/services/notes';
 import { CategoriesApi } from '../../../core/services/categories';
 import { ExportApi } from '../../../core/services/export';
@@ -65,6 +67,7 @@ export class NotesList implements OnInit, OnDestroy {
   private shareApi = inject(ShareApi);
   private router = inject(Router);
   private bottomSheet = inject(MatBottomSheet);
+  private dialog = inject(MatDialog);
   private toast = inject(ToastService);
   protected readonly filterState = inject(NotesFilterState);
 
@@ -182,6 +185,18 @@ export class NotesList implements OnInit, OnDestroy {
 
   newNote(): void {
     this.router.navigate(['/notes/new']);
+  }
+
+  importFromUrl(): void {
+    this.dialog
+      .open(UrlImportDialog, { width: '480px' })
+      .afterClosed()
+      .subscribe((note) => {
+        if (note) {
+          this.toast.success('Article saved');
+          this.router.navigate(['/notes', note.id]);
+        }
+      });
   }
 
   openNote(id: string): void {
