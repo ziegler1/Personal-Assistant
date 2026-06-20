@@ -26,7 +26,7 @@ export const config = {
   embeddingDimensions: EMBEDDING_DIMENSIONS[aiProvider],
 
   anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
-  claudeChatModel: process.env.CLAUDE_CHAT_MODEL || 'claude-sonnet-4-5',
+  claudeChatModel: process.env.CLAUDE_CHAT_MODEL || 'claude-sonnet-4-6',
 
   cohereApiKey: process.env.COHERE_API_KEY || '',
   cohereEmbedModel: process.env.COHERE_EMBED_MODEL || 'embed-english-v3.0',
