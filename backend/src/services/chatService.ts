@@ -3,6 +3,7 @@ import { getChatProvider, getEmbeddingProvider, getWebSearchProvider, Message } 
 import { config } from '../config';
 import { ContentType } from '../types/models';
 import { NO_TEXT_EXTRACTED_PREFIX } from './ingestionService';
+import { buildCollectionTools, executeCollectionTool } from '../ai/tools/collectionsTool';
 
 export interface ChatSource {
   id: string;
@@ -137,6 +138,7 @@ export async function chat(messages: Message[], opts: ChatOptions = {}): Promise
         console.error('Web search failed:', err);
       }
     }
+
   }
 
   const context = [
@@ -151,7 +153,8 @@ export async function chat(messages: Message[], opts: ChatOptions = {}): Promise
     }),
     ...webResults.map((r) => `### ${r.title} (${r.url})\n${r.content}`),
   ];
-  const reply = await getChatProvider().chat(providerMessages, context);
+  const collectionTools = buildCollectionTools();
+  const reply = await getChatProvider().chat(providerMessages, context, collectionTools, executeCollectionTool);
 
   return {
     reply,

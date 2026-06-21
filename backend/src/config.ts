@@ -41,6 +41,11 @@ export const config = {
 
   tavilyApiKey: process.env.TAVILY_API_KEY || '',
 
+  codexApiUrl: process.env.CODEX_API_URL || '',
+  codexInternalKey: process.env.CODEX_INTERNAL_KEY || '',
+  cheersApiUrl: process.env.CHEERS_API_URL || '',
+  cheersInternalKey: process.env.CHEERS_INTERNAL_KEY || '',
+
   r2: {
     accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',

@@ -1,5 +1,5 @@
 import { config } from '../config';
-import { AIProvider, Message } from './types';
+import { AIProvider, Message, ToolDefinition, ToolExecutor } from './types';
 import { buildSystemPrompt } from './systemPrompt';
 
 export class OllamaProvider implements AIProvider {
@@ -18,7 +18,7 @@ export class OllamaProvider implements AIProvider {
     return data.embedding;
   }
 
-  async chat(messages: Message[], context: string[]): Promise<string> {
+  async chat(messages: Message[], context: string[], _tools?: ToolDefinition[], _executor?: ToolExecutor): Promise<string> {
     const ollamaMessages = [
       { role: 'system', content: buildSystemPrompt(context) },
       ...messages.map((m) => ({ role: m.role, content: m.content })),

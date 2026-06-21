@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { config } from '../config';
-import { AIProvider, Message } from './types';
+import { AIProvider, Message, ToolDefinition, ToolExecutor } from './types';
 import { buildSystemPrompt } from './systemPrompt';
 
 export class OpenAIProvider implements AIProvider {
@@ -18,7 +18,7 @@ export class OpenAIProvider implements AIProvider {
     return response.data[0].embedding;
   }
 
-  async chat(messages: Message[], context: string[]): Promise<string> {
+  async chat(messages: Message[], context: string[], _tools?: ToolDefinition[], _executor?: ToolExecutor): Promise<string> {
     const response = await this.client.chat.completions.create({
       model: config.openaiChatModel,
       messages: [
