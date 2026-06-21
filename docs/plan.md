@@ -52,6 +52,22 @@ title: Plan
   `/share/:token` URL.
 - **Current status** - live on Railway: Postgres, PA-Backend, and
   Personal-Assistant (frontend) services are all green.
+- **URL Ingestion** (2026-06-20) - `POST /api/notes/from-url` fetches any URL,
+  extracts readable text via `@mozilla/readability` + `jsdom`, saves as a
+  `content_type='link'` note with full RAG indexing. Frontend: link icon button
+  in Notes list header opens `UrlImportDialog`.
+- **Phase 3: Internal APIs** (2026-06-20) - Added `GET /api/internal/books*`
+  to Codex (sf-fantasy-shelf) and `GET /api/internal/bourbons*` to Cheers Mate,
+  each protected by `X-Internal-Key` header with separate env var secrets.
+  Tested in production.
+- **Phase 4: Chat Tool Calling** (2026-06-20) - Real Anthropic tool_use API
+  wired into PA chat. `claudeProvider.ts` handles full tool loop
+  (tool_use → execute → tool_result → final response). Four tools:
+  `get_books`, `get_recent_books`, `get_bourbons`, `get_top_bourbons`.
+  Model decides when to call tools based on conversation context.
+- **Anthropic SDK upgrade** (2026-06-20) - `@anthropic-ai/sdk` 0.32.1 → 0.105.0
+  to fix `ERR_STREAM_PREMATURE_CLOSE` on Node 22 (old SDK used node-fetch@2
+  which is incompatible with Node 22 stream handling).
 
 ## Next steps
 

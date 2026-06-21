@@ -11,15 +11,25 @@ cites your own notes as sources.
 - **Hybrid search** - combines PostgreSQL full-text search with pgvector
   semantic similarity for relevant results, complete with highlighted
   snippets.
+- **URL ingestion** - paste any article or web page URL and PA fetches it,
+  extracts the readable text (via Mozilla Readability — same engine as
+  Firefox Reader Mode), and saves it as a searchable note instantly.
 - **AI chat** - ask questions about your notes; the assistant retrieves
   relevant notes and answers with citations, with optional web search
-  fallback via Tavily.
+  fallback via Tavily. Chat also has access to live data from connected
+  apps via Anthropic tool_use (see Collection Tools below).
 - **File storage** - drag-and-drop file uploads to Cloudflare R2, optionally
   linked to a note, with inline image/PDF previews.
 - **Pluggable AI providers** - switch between Claude (chat) + Cohere
   (embeddings), OpenAI, or a fully local Ollama setup via one env var.
 - **Authentication** - password-protected login screen (JWT session cookie); all API routes reject unauthenticated requests. Set `APP_PASSWORD` and `JWT_SECRET` env vars.
 - **Scoped share links** - generate a unique, unguessable public link for any note. Recipients see only that note's content — no sidebar, no navigation, no access to anything else. Links can be revoked instantly.
+- **Collection tools** - chat can call external app APIs as Anthropic tools,
+  giving Claude live access to your reading list (Codex/sf-fantasy-shelf)
+  and bourbon collection (Cheers Mate) to answer personalised questions like
+  "what should I read next?" or "recommend a bourbon based on what I like".
+  Tools are registered only when the relevant env vars are configured; each
+  degrades gracefully if the backing service is unreachable.
 - **Mobile-friendly UI** - a Home dashboard (quick search, recent notes, FAB
   for quick add), bottom tab navigation on handsets, pull-to-refresh,
   long-press action sheets (edit/delete/share), skeleton loaders, haptic
@@ -33,7 +43,7 @@ cites your own notes as sources.
 | Backend     | Node.js, Express, TypeScript                             |
 | Database    | PostgreSQL + pgvector (hybrid full-text + vector search)  |
 | File storage| Cloudflare R2 (S3-compatible)                            |
-| AI chat     | Claude (`claude-sonnet-4-5`), OpenAI, or local Ollama     |
+| AI chat     | Claude (`claude-sonnet-4-6`), OpenAI, or local Ollama     |
 | AI embeddings | Cohere `embed-english-v3.0`, OpenAI `text-embedding-3-small`, or local `nomic-embed-text` |
 | Hosting     | Railway (Docker images for backend + frontend)           |
 
@@ -156,6 +166,10 @@ outside Docker.
 | `OLLAMA_BASE_URL` | Ollama server URL (default `http://ollama:11434` in Docker, `http://localhost:11434` locally) |
 | `OLLAMA_CHAT_MODEL` / `OLLAMA_EMBED_MODEL` | Default `qwen3:8b` / `nomic-embed-text` |
 | `TAVILY_API_KEY` | [Tavily](https://tavily.com) API key for web search in chat (`search:` prefix or low-confidence fallback). Optional - without it, web search is skipped and chat falls back to notes/general knowledge |
+| `CODEX_API_URL` | Base URL of the sf-fantasy-shelf backend — enables `get_books` / `get_recent_books` chat tools. Optional. |
+| `CODEX_INTERNAL_KEY` | Shared secret for Codex internal API calls (`X-Internal-Key` header). Generate with `openssl rand -hex 32`. |
+| `CHEERS_API_URL` | Base URL of the Cheers Mate frontend (nginx proxies `/api/*` to backend) — enables bourbon chat tools. Optional. |
+| `CHEERS_INTERNAL_KEY` | Shared secret for Cheers Mate internal API calls. Generate separately from `CODEX_INTERNAL_KEY`. |
 | `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET_NAME` / `R2_ENDPOINT` | Cloudflare R2 credentials for file storage |
 | `RESEND_API_KEY` | [Resend](https://resend.com) API key for the "email to self" export action. Optional — leave blank to disable (endpoint returns 503) |
 | `SMTP_FROM` | Sender address for email exports (e.g. `you@yourdomain.com`). Falls back to `onboarding@resend.dev` on Resend's free tier |
@@ -171,6 +185,7 @@ outside Docker.
 | --- | --- | --- |
 | `GET` | `/api/notes` | List notes, optional `?tag=` and `?content_type=` filters |
 | `POST` | `/api/notes` | Create a note (and embed its content) |
+| `POST` | `/api/notes/from-url` | Fetch a URL, extract readable text, save as note |
 | `GET` | `/api/notes/search?q=` | Hybrid full-text + semantic search |
 | `GET` | `/api/notes/:id` | Get a note with its attached files |
 | `PUT` | `/api/notes/:id` | Update a note (re-embeds if content changes) |

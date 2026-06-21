@@ -27,6 +27,28 @@ This project uses Memory Vault (Postgres-backed, via MCP) for persistent memory 
 - **Share view**: `/share/:token` — no sidebar, no nav, renders only the note content
 - **Bug fixed**: `shared/share-note.ts` was previously passing `/notes/:id` (authenticated route) to `navigator.share()` — now correctly calls the API first and passes `/share/:token`
 
+## URL Ingestion (added 2026-06-20)
+- **Endpoint**: `POST /api/notes/from-url` — validates URL, fetches page, extracts readable text via `@mozilla/readability` + `jsdom`, saves as note with `content_type='link'` and `source=<url>`
+- **Frontend**: "link" icon button in Notes list header → `UrlImportDialog` component at `frontend/src/app/features/notes/url-import-dialog/`
+- **Packages**: `@mozilla/readability`, `jsdom`, `@types/jsdom` added to backend dependencies
+- **Failure handling**: malformed URL → 400, HTTP error → 422 with message, JS-only sites → note created with whatever static content the server returned
+
+## Chat Tool Calling (added 2026-06-20)
+- **Pattern**: Real Anthropic tool_use API — tools defined in `backend/src/ai/types.ts` (`ToolDefinition`, `ToolExecutor`), passed to `AIProvider.chat()`, Claude decides when to invoke
+- **Tool loop**: `claudeProvider.ts` handles `stop_reason === 'tool_use'` in a loop — executes tool via `executor(toolName)`, feeds back `tool_result`, repeats until final text response
+- **Collection tools**: `backend/src/ai/tools/collectionsTool.ts` — 4 tools: `get_books`, `get_recent_books`, `get_bourbons`, `get_top_bourbons`
+  - Codex (sf-fantasy-shelf): `GET /api/internal/books` and `/books/recent` — keyed by `CODEX_API_URL` + `CODEX_INTERNAL_KEY`
+  - Cheers Mate: `GET /api/internal/bourbons` and `/bourbons/top-rated` — keyed by `CHEERS_API_URL` + `CHEERS_INTERNAL_KEY`
+  - `buildCollectionTools()` only registers tools whose backing env vars are set — safe to leave unconfigured
+  - 5-second timeout via `AbortSignal.timeout(5000)`, always returns `[]` on failure (never throws)
+- **Graceful degradation**: Ollama/OpenAI providers accept but ignore tool params — tool calling is Claude-only
+- **Email**: Uses Resend API (`RESEND_API_KEY`), NOT SMTP. `emailService.ts` uses `fetch()` to `api.resend.com`. `nodemailer` removed.
+
+## External APIs (added 2026-06-20)
+- **Codex internal API**: `https://backend-production-37fc.up.railway.app/api/internal/books*` — `X-Internal-Key: $CODEX_INTERNAL_KEY`
+- **Cheers Mate internal API**: `https://distinguished-youth-production.up.railway.app/api/internal/bourbons*` — routed via nginx frontend proxy → `X-Internal-Key: $CHEERS_INTERNAL_KEY`
+  - Note: use the `distinguished-youth` (frontend) URL, NOT `tranquil-analysis` (backend direct) — the backend has no working public port
+
 ## Key conventions
 - **No ORM** — raw SQL via `pg` pool
 - **VARCHAR + CHECK** constraints, never Postgres enums for new columns
@@ -48,9 +70,14 @@ ng build           # production build to dist/
 ```
 
 ## Required env vars
-See `backend/.env.example` for the full list. The two new auth vars:
+See `backend/.env.example` for the full list. Key vars:
 - `APP_PASSWORD` — login passphrase
 - `JWT_SECRET` — long random string for signing session cookies
+- `ANTHROPIC_API_KEY` — required when `AI_PROVIDER=claude`. **Note**: SDK version must be ≥ 0.105.0 (old 0.32.x used node-fetch which fails with ERR_STREAM_PREMATURE_CLOSE on Node 22)
+- `CLAUDE_CHAT_MODEL` — defaults to `claude-sonnet-4-6` (update when model is superseded)
+- `RESEND_API_KEY` — for email export (`emailService.ts` uses Resend REST API, not SMTP)
+- `CODEX_API_URL` / `CODEX_INTERNAL_KEY` — Codex book collection tool (optional)
+- `CHEERS_API_URL` / `CHEERS_INTERNAL_KEY` — Cheers Mate bourbon tool (optional)
 
 ## Deployment (Railway)
 - Backend service: `docker/backend.Dockerfile`, build context = repo root
